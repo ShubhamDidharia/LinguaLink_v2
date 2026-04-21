@@ -117,8 +117,8 @@ export default function Home() {
           border: '1px solid #e0e0e0'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <h3 style={{ margin: '0 0 8px 0' }}>My Profile</h3>
+            <div style={{ flex: 1, cursor: 'pointer' }} onClick={() => navigate(`/profile/${currentUser._id}`)}>
+              <h3 style={{ margin: '0 0 8px 0', color: '#1976d2' }}>My Profile</h3>
               <p style={{ margin: '4px 0', fontSize: '13px', color: '#666' }}>
                 <strong>Email:</strong> {currentUser.email}
               </p>
@@ -139,13 +139,22 @@ export default function Home() {
                 </p>
               )}
             </div>
-            <button 
-              className="secondary"
-              onClick={handleLogout}
-              style={{ padding: '6px 12px', fontSize: '13px', whiteSpace: 'nowrap' }}
-            >
-              Logout
-            </button>
+            <div style={{ display: 'flex', gap: '8px', marginLeft: '12px' }}>
+              <button 
+                className="primary"
+                onClick={() => navigate(`/profile/${currentUser._id}`)}
+                style={{ padding: '6px 12px', fontSize: '13px', whiteSpace: 'nowrap' }}
+              >
+                View Profile
+              </button>
+              <button 
+                className="secondary"
+                onClick={handleLogout}
+                style={{ padding: '6px 12px', fontSize: '13px', whiteSpace: 'nowrap' }}
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       )}

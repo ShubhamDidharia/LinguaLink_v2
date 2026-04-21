@@ -45,4 +45,9 @@ export async function getUsers() {
   return res.data
 }
 
-export default { login, signup, logout, getMe, getInterests, getUsers }
+export async function getUser(userId) {
+  const res = await client.get(`/api/auth/users/${userId}`)
+  return res.data
+}
+
+export default { login, signup, logout, getMe, getInterests, getUsers, getUser }
