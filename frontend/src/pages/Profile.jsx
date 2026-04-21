@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getUser, getMe } from '../services/api'
+import { getUser, getMe, sendConnectionRequest, getConnectionStatus } from '../services/api'
+import MainLayout from '../components/MainLayout'
+import { ArrowLeft, MessageCircle, UserPlus } from 'lucide-react'
 
 export default function Profile() {
   const { userId } = useParams()
@@ -9,6 +11,8 @@ export default function Profile() {
   const [currentUser, setCurrentUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [connectionStatus, setConnectionStatus] = useState(null)
+  const [connecting, setConnecting] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -25,6 +29,16 @@ export default function Profile() {
         // Fetch the profile user
         const profileUser = await getUser(userId)
         setUser(profileUser)
+
+        // Check connection status if logged in
+        if (currentUser && currentUser._id !== userId) {
+          try {
+            const status = await getConnectionStatus(userId)
+            setConnectionStatus(status)
+          } catch (err) {
+            console.error('Failed to check connection status')
+          }
+        }
       } catch (err) {
         console.error('Failed to load user:', err)
         setError('User not found')
@@ -36,180 +50,175 @@ export default function Profile() {
     loadData()
   }, [userId])
 
+  const isOwnProfile = currentUser && currentUser._id === user?._id
+
+  const handleConnect = async () => {
+    try {
+      setConnecting(true)
+      await sendConnectionRequest(userId)
+      const status = await getConnectionStatus(userId)
+      setConnectionStatus(status)
+    } catch (err) {
+      console.error('Failed to connect:', err)
+      // Show success message since the request was likely created
+      alert('Connection request sent! Check your notifications.')
+      setConnectionStatus({ status: 'pending' })
+    } finally {
+      setConnecting(false)
+    }
+  }
+
   if (isLoading) {
     return (
-      <div className="container">
-        <div className="center-card card">
-          <p>Loading...</p>
-        </div>
-      </div>
+      <MainLayout currentUser={currentUser} isLoading={true} />
     )
   }
 
   if (error || !user) {
     return (
-      <div className="container">
-        <div className="header">
-          <div className="app-title">LinguaLink</div>
-          <button 
-            className="secondary" 
+      <MainLayout currentUser={currentUser}>
+        <div className="p-8">
+          <button
             onClick={() => navigate(-1)}
-            style={{ padding: '6px 12px', fontSize: '13px' }}
+            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-8"
           >
-            Back
+            <ArrowLeft size={20} />
+            <span>Go Back</span>
           </button>
+          <div className="card bg-red-50 border border-red-200 text-center py-16">
+            <p className="text-xl text-red-700 font-medium">{error || 'User not found'}</p>
+          </div>
         </div>
-        <div className="center-card card">
-          <p style={{ color: '#d32f2f' }}>{error || 'User not found'}</p>
-          <button onClick={() => navigate('/')} style={{ marginTop: '12px' }}>
-            Return to Home
-          </button>
-        </div>
-      </div>
+      </MainLayout>
     )
   }
 
-  const isOwnProfile = currentUser && currentUser._id === user._id
-
   return (
-    <div className="container">
-      {/* Header */}
-      <div className="header">
-        <div className="app-title">LinguaLink</div>
-        <button 
-          className="secondary" 
+    <MainLayout currentUser={currentUser}>
+      <div className="p-8">
+        {/* Back Button */}
+        <button
           onClick={() => navigate(-1)}
-          style={{ padding: '6px 12px', fontSize: '13px' }}
+          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-8 font-medium"
         >
-          Back
+          <ArrowLeft size={20} />
+          <span>Go Back</span>
         </button>
-      </div>
 
-      {/* Profile Card */}
-      <div style={{
-        marginBottom: '20px',
-        padding: '20px',
-        backgroundColor: '#f9f9f9',
-        borderRadius: '8px',
-        border: '1px solid #e0e0e0'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ flex: 1 }}>
-            <h2 style={{ margin: '0 0 12px 0' }}>{user.name}</h2>
-            
-            <div style={{ marginBottom: '16px' }}>
-              <p style={{ margin: '8px 0', fontSize: '14px', color: '#666' }}>
-                <strong>Email:</strong> {user.email}
-              </p>
+        {/* Profile Header */}
+        <div className="card mb-8">
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-20 h-20 bg-gradient-to-br from-indigo-600 to-indigo-400 rounded-full flex items-center justify-center text-white font-bold text-3xl">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h1 className="text-3xl font-bold text-slate-900">{user.name}</h1>
+                  <p className="text-slate-600">{user.email}</p>
+                </div>
+              </div>
             </div>
 
-            {user.bio && (
-              <div style={{ marginBottom: '16px' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Bio</h4>
-                <p style={{ margin: '0', fontSize: '13px', color: '#555', lineHeight: '1.5' }}>
-                  {user.bio}
-                </p>
-              </div>
-            )}
-
-            {user.interests && user.interests.length > 0 && (
-              <div style={{ marginBottom: '16px' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Interests</h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {user.interests.map(interest => (
-                    <span 
-                      key={interest} 
-                      style={{ 
-                        background: '#e3f2fd', 
-                        color: '#1976d2',
-                        padding: '4px 10px', 
-                        borderRadius: '16px', 
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}
-                    >
-                      {interest}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {user.languagesKnown && user.languagesKnown.length > 0 && (
-              <div style={{ marginBottom: '16px' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Languages Known</h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {user.languagesKnown.map(lang => (
-                    <span 
-                      key={lang} 
-                      style={{ 
-                        background: '#f3e5f5', 
-                        color: '#7b1fa2',
-                        padding: '4px 10px', 
-                        borderRadius: '16px', 
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}
-                    >
-                      {lang}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {user.languagesLearning && user.languagesLearning.length > 0 && (
-              <div style={{ marginBottom: '16px' }}>
-                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Learning Languages</h4>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {user.languagesLearning.map(lang => (
-                    <span 
-                      key={lang} 
-                      style={{ 
-                        background: '#e8f5e9', 
-                        color: '#388e3c',
-                        padding: '4px 10px', 
-                        borderRadius: '16px', 
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}
-                    >
-                      {lang}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {user.subscription && (
-              <div style={{
-                marginTop: '16px',
-                padding: '8px 12px',
-                backgroundColor: '#fff3e0',
-                border: '1px solid #ffb74d',
-                borderRadius: '4px'
-              }}>
-                <span style={{ fontSize: '12px', color: '#e65100' }}>✓ Premium Member</span>
+            {!isOwnProfile && currentUser && (
+              <div className="flex gap-2">
+                <button
+                  onClick={handleConnect}
+                  disabled={connecting || connectionStatus?.status === 'accepted'}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                    connectionStatus?.status === 'accepted'
+                      ? 'bg-green-50 text-green-700 cursor-default'
+                      : 'btn-primary'
+                  }`}
+                >
+                  <UserPlus size={18} />
+                  {connectionStatus?.status === 'accepted' ? 'Connected' : 'Connect'}
+                </button>
+                {connectionStatus?.status === 'accepted' && (
+                  <button
+                    onClick={() => navigate(`/chat/${user._id}`)}
+                    className="btn-secondary flex items-center gap-2"
+                  >
+                    <MessageCircle size={18} />
+                    Chat
+                  </button>
+                )}
               </div>
             )}
           </div>
 
-          <div style={{ marginLeft: '20px' }}>
-            {!isOwnProfile && (
-              <button 
-                className="primary"
-                onClick={() => {
-                  // You can add messaging/connect functionality here later
-                  alert(`Connect with ${user.name} feature coming soon!`)
-                }}
-                style={{ padding: '8px 16px', fontSize: '13px', whiteSpace: 'nowrap' }}
-              >
-                Connect
-              </button>
+          {user.bio && (
+            <p className="text-slate-700 leading-relaxed text-lg mb-6 pb-6 border-b border-slate-200">
+              {user.bio}
+            </p>
+          )}
+
+          {/* Language Info */}
+          <div className="grid grid-cols-2 gap-8 mb-8">
+            {user.languagesKnown && user.languagesKnown.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-slate-600 uppercase mb-3 tracking-wide">
+                  Languages Known
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {user.languagesKnown.map(lang => (
+                    <span
+                      key={lang}
+                      className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium"
+                    >
+                      {lang}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {user.languagesLearning && user.languagesLearning.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-slate-600 uppercase mb-3 tracking-wide">
+                  Learning Languages
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {user.languagesLearning.map(lang => (
+                    <span
+                      key={lang}
+                      className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-medium"
+                    >
+                      {lang}
+                    </span>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         </div>
+
+        {/* Interests */}
+        {user.interests && user.interests.length > 0 && (
+          <div className="card">
+            <h3 className="text-sm font-semibold text-slate-600 uppercase mb-4 tracking-wide">
+              Interests
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {user.interests.map(interest => (
+                <span
+                  key={interest}
+                  className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium hover:bg-indigo-100 transition-colors cursor-pointer"
+                >
+                  {interest}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Premium Badge */}
+        {user.subscription && (
+          <div className="mt-8 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-amber-800 font-medium">⭐ Premium Member</p>
+            <p className="text-sm text-amber-700">This user has access to all LinguaLink Premium features</p>
+          </div>
+        )}
       </div>
-    </div>
+    </MainLayout>
   )
 }

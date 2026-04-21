@@ -3,10 +3,9 @@ import axios from 'axios'
 const BASE = import.meta.env.VITE_API_BASE || 'http://localhost:4000'
 const client = axios.create({ 
   baseURL: BASE,
-  withCredentials: true // Send cookies automatically
+  withCredentials: true
 })
 
-// Intercept responses to handle errors globally 
 client.interceptors.response.use(
   res => res,
   err => {
@@ -50,4 +49,68 @@ export async function getUser(userId) {
   return res.data
 }
 
-export default { login, signup, logout, getMe, getInterests, getUsers, getUser }
+// Connection endpoints
+export async function sendConnectionRequest(receiverId) {
+  const res = await client.post('/api/connections', { receiverId })
+  return res.data
+}
+
+export async function getPendingConnections() {
+  const res = await client.get('/api/connections/pending')
+  return res.data
+}
+
+export async function getAcceptedConnections() {
+  const res = await client.get('/api/connections/accepted')
+  return res.data
+}
+
+export async function respondToConnectionRequest(connectionId, action) {
+  const res = await client.put(`/api/connections/${connectionId}`, { action })
+  return res.data
+}
+
+export async function getConnectionStatus(otherUserId) {
+  const res = await client.get(`/api/connections/status/${otherUserId}`)
+  return res.data
+}
+
+// Message endpoints
+export async function sendMessage(receiverId, content) {
+  const res = await client.post('/api/messages', { receiverId, content })
+  return res.data
+}
+
+export async function getMessages(otherUserId) {
+  const res = await client.get(`/api/messages/${otherUserId}`)
+  return res.data
+}
+
+export async function getConversations() {
+  const res = await client.get('/api/messages/conversations')
+  return res.data
+}
+
+export async function markMessagesAsRead(otherUserId) {
+  const res = await client.put(`/api/messages/${otherUserId}/read`)
+  return res.data
+}
+
+export default {
+  login,
+  signup,
+  logout,
+  getMe,
+  getInterests,
+  getUsers,
+  getUser,
+  sendConnectionRequest,
+  getPendingConnections,
+  getAcceptedConnections,
+  respondToConnectionRequest,
+  getConnectionStatus,
+  sendMessage,
+  getMessages,
+  getConversations,
+  markMessagesAsRead
+}
