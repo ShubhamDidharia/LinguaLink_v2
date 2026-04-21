@@ -3,10 +3,15 @@ import bcrypt from 'bcryptjs'
 import User from '../models/User.js'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret'
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d'
 
-function generateToken(user) {
-  return jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN })
+function generateTokenAndSetCookie(userId, res) {
+  const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' })
+  res.cookie('jwt', token, {
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    sameSite: 'lax',
+    secure: false
+  })
 }
 
 export async function signUp(req, res) {
@@ -20,10 +25,10 @@ export async function signUp(req, res) {
     const user = new User({ name, email, password, bio, interests, languagesKnown, languagesLearning, subscription })
     await user.save()
 
-    const token = generateToken(user)
+    generateTokenAndSetCookie(user._id, res)
     const userSafe = user.toObject()
     delete userSafe.password
-    res.status(201).json({ user: userSafe, token })
+    res.status(201).json(userSafe)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Server error' })
@@ -41,10 +46,31 @@ export async function login(req, res) {
     const match = await bcrypt.compare(password, user.password)
     if (!match) return res.status(400).json({ error: 'Invalid credentials' })
 
-    const token = generateToken(user)
+    generateTokenAndSetCookie(user._id, res)
     const userSafe = user.toObject()
     delete userSafe.password
-    res.json({ user: userSafe, token })
+    res.json(userSafe)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
+  }
+}
+
+export async function logout(req, res) {
+  try {
+    res.cookie('jwt', '', { httpOnly: true, maxAge: 0 })
+    res.status(200).json({ message: 'Logged out successfully' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
+  }
+}
+
+export async function getMe(req, res) {
+  try {
+    const user = await User.findById(req.user.userId).select('-password')
+    if (!user) return res.status(404).json({ error: 'User not found' })
+    res.status(200).json(user)
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Server error' })

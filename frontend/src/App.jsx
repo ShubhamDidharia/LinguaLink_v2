@@ -1,10 +1,17 @@
 import React from 'react'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Login from './pages/Login'
+import Signup from './pages/Signup'
+import Home from './pages/Home'
 
 export default function App() {
   return (
-    <div style={{fontFamily: 'Arial, sans-serif', padding: 24}}>
-      <h1>LinguaLink (Frontend)</h1>
-      <p>React app running (JS). Connects to backend at <code>http://localhost:4000</code>.</p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<Home />} />
+      </Routes>
+    </BrowserRouter>
   )
 }

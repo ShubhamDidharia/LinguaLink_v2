@@ -5,17 +5,19 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret'
 
 export default async function authMiddleware(req, res, next) {
   try {
-    const auth = req.headers.authorization
-    if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'No token provided' })
-    const token = auth.split(' ')[1]
+    const token = req.cookies.jwt
+    if (!token) return res.status(401).json({ error: 'Unauthorized - no token' })
+    
     const decoded = jwt.verify(token, JWT_SECRET)
-    // Attach user id and optionally fetch user
-    req.user = { id: decoded.id, email: decoded.email }
-    // Optionally fetch user document
-    // req.userDoc = await User.findById(decoded.id).select('-password')
+    if (!decoded) return res.status(401).json({ error: 'Unauthorized - invalid token' })
+
+    const user = await User.findById(decoded.userId).select('-password')
+    if (!user) return res.status(404).json({ error: 'User not found' })
+
+    req.user = decoded
     next()
   } catch (err) {
-    console.error('Auth error', err.message)
+    console.error('Auth error:', err.message)
     return res.status(401).json({ error: 'Unauthorized' })
   }
 }
