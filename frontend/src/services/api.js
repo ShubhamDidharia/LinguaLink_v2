@@ -96,6 +96,18 @@ export async function markMessagesAsRead(otherUserId) {
   return res.data
 }
 
+export async function updateProfile(profileData) {
+  const res = await client.put('/api/auth/profile', profileData)
+  return res.data
+}
+
+export async function deleteProfile(password) {
+  const res = await client.delete('/api/auth/profile', {
+    data: { password }
+  })
+  return res.data
+}
+
 export default {
   login,
   signup,
@@ -112,5 +124,7 @@ export default {
   sendMessage,
   getMessages,
   getConversations,
-  markMessagesAsRead
+  markMessagesAsRead,
+  updateProfile,
+  deleteProfile
 }

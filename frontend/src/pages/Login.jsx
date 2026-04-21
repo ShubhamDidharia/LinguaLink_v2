@@ -31,40 +31,40 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-slate-100 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-slate-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
       <div className="w-full max-w-md">
         {/* Logo & Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="inline-block">
-            <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg">
-              <span className="text-white text-2xl font-bold">L</span>
+            <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mb-3 sm:mb-4 mx-auto shadow-lg">
+              <span className="text-white text-xl sm:text-2xl font-bold">L</span>
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">LinguaLink</h1>
-          <p className="text-slate-600">Connect with language learners worldwide</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-1 sm:mb-2">LinguaLink</h1>
+          <p className="text-sm sm:text-base text-slate-600">Connect with language learners worldwide</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-soft-lg p-8 border border-slate-200">
+        <div className="bg-white rounded-2xl shadow-soft-lg p-6 sm:p-8 border border-slate-200">
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-              <div className="text-red-600 mt-0.5">⚠️</div>
-              <p className="text-sm text-red-700 font-medium">{error}</p>
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 sm:gap-3">
+              <div className="text-red-600 mt-0.5 flex-shrink-0">⚠️</div>
+              <p className="text-xs sm:text-sm text-red-700 font-medium">{error}</p>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Welcome Back</h2>
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-6">Welcome Back</h2>
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="email" className="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-3 text-slate-400" size={20} />
+                <Mail className="absolute left-3 top-2.5 text-slate-400" size={18} />
                 <input
                   id="email"
                   type="email"
@@ -72,18 +72,18 @@ export default function Login() {
                   onChange={e => setEmail(e.target.value)}
                   placeholder="a1"
                   required
-                  className="input-field pl-10 focus:ring-2 focus:ring-indigo-500"
+                  className="input-field pl-10 focus:ring-2 focus:ring-indigo-500 text-sm"
                 />
               </div>
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-2">
+              <label htmlFor="password" className="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5 sm:mb-2">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3 text-slate-400" size={20} />
+                <Lock className="absolute left-3 top-2.5 text-slate-400" size={18} />
                 <input
                   id="password"
                   type="password"
@@ -91,7 +91,7 @@ export default function Login() {
                   onChange={e => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="input-field pl-10 focus:ring-2 focus:ring-indigo-500"
+                  className="input-field pl-10 focus:ring-2 focus:ring-indigo-500 text-sm"
                 />
               </div>
             </div>
@@ -103,7 +103,7 @@ export default function Login() {
                 type="checkbox"
                 className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
               />
-              <label htmlFor="remember" className="ml-2 text-sm text-slate-600 cursor-pointer">
+              <label htmlFor="remember" className="ml-2 text-xs sm:text-sm text-slate-600 cursor-pointer">
                 Keep me signed in
               </label>
             </div>
@@ -112,22 +112,22 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn-primary flex items-center justify-center gap-2 py-2.5 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              className="w-full btn-primary flex items-center justify-center gap-2 py-2 sm:py-2.5 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm sm:text-base"
             >
-              <LogIn size={20} />
+              <LogIn size={18} className="sm:w-5 sm:h-5" />
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
           {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
-            <p className="text-xs font-medium text-indigo-900 mb-2">🧪 Demo Credentials:</p>
-            <p className="text-sm text-indigo-800 font-mono">a1 / 123456</p>
+          <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+            <p className="text-xs font-medium text-indigo-900 mb-1 sm:mb-2">🧪 Demo Credentials:</p>
+            <p className="text-xs sm:text-sm text-indigo-800 font-mono">a1 / 123456</p>
           </div>
 
           {/* Sign Up Link */}
-          <div className="mt-6 text-center">
-            <p className="text-slate-600 text-sm">
+          <div className="mt-4 sm:mt-6 text-center">
+            <p className="text-slate-600 text-xs sm:text-sm">
               Don't have an account?{' '}
               <button
                 onClick={() => navigate('/signup')}
@@ -140,7 +140,7 @@ export default function Login() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-slate-600 text-xs mt-8">
+        <p className="text-center text-slate-600 text-xs mt-6 sm:mt-8">
           By signing in, you agree to our Terms of Service
         </p>
       </div>

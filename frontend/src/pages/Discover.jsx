@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getMe, getUsers } from '../services/api'
+import { getMe, getUsers, getAcceptedConnections } from '../services/api'
 import MainLayout from '../components/MainLayout'
 import DiscoverUserCard from '../components/DiscoverUserCard'
 import { Sparkles } from 'lucide-react'
@@ -27,13 +27,26 @@ export default function Discover() {
         const allUsers = await getUsers()
         setUsers(allUsers)
 
+        // Fetch accepted connections to filter them out
+        let connectedUserIds = []
+        try {
+          const connections = await getAcceptedConnections()
+          connectedUserIds = connections.map(conn => conn._id)
+        } catch (err) {
+          console.error('Failed to load connections:', err)
+        }
+
         // Compute matches
         const meInterests = user.interests || []
         const meKnown = user.languagesKnown || []
         const meLearning = user.languagesLearning || []
 
         const matched = allUsers.filter(u => {
+          // Exclude self
           if (!u || !u._id || u._id === user._id) return false
+          // Exclude already connected users
+          if (connectedUserIds.includes(u._id)) return false
+          
           const commonInterests = intersect(meInterests, u.interests || [])
           const languageMatch =
             intersect(meLearning, u.languagesKnown || []).length > 0 ||
@@ -56,14 +69,14 @@ export default function Discover() {
 
   return (
     <MainLayout currentUser={currentUser} isLoading={isLoading}>
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center gap-3 mb-2">
-            <Sparkles className="text-indigo-600" size={28} />
-            <h1 className="text-4xl font-bold text-slate-900">Discover</h1>
+        <div className="mb-8 sm:mb-12">
+          <div className="flex items-center gap-2 sm:gap-3 mb-2">
+            <Sparkles className="text-indigo-600 w-6 h-6 sm:w-7 sm:h-7" />
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">Discover</h1>
           </div>
-          <p className="text-slate-600 text-lg">
+          <p className="text-slate-600 text-sm sm:text-base lg:text-lg">
             {currentUser
               ? 'Meet fellow language learners who match your interests and language goals'
               : 'Connect with language learners around the world'}
@@ -72,13 +85,13 @@ export default function Discover() {
 
         {/* User Grid */}
         {displayUsers.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-6xl mb-4">🌍</div>
-            <p className="text-xl text-slate-600 mb-2">No matches found yet</p>
-            <p className="text-slate-500">Complete your profile to find better matches</p>
+          <div className="text-center py-12 sm:py-16">
+            <div className="text-4xl sm:text-5xl lg:text-6xl mb-3 sm:mb-4">🌍</div>
+            <p className="text-base sm:text-lg lg:text-xl text-slate-600 mb-2">No matches found yet</p>
+            <p className="text-xs sm:text-sm text-slate-500 px-4">Complete your profile to find better matches or connect with more people</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
             {displayUsers.map(user => (
               <DiscoverUserCard
                 key={user._id}

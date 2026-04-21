@@ -84,22 +84,22 @@ export default function Signup() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-slate-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       <div className="w-full max-w-md">
         {/* Logo & Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="inline-block">
-            <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mb-4 mx-auto shadow-lg">
-              <span className="text-white text-2xl font-bold">L</span>
+            <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mb-3 sm:mb-4 mx-auto shadow-lg">
+              <span className="text-white text-xl sm:text-2xl font-bold">L</span>
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">LinguaLink</h1>
-          <p className="text-slate-600">Join our language learning community</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-1 sm:mb-2">LinguaLink</h1>
+          <p className="text-sm sm:text-base text-slate-600">Join our language learning community</p>
         </div>
 
         {/* Progress Indicator */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6 sm:mb-8 px-2 sm:px-0">
           {[1, 2, 3].map(s => (
-            <div key={s} className="flex items-center">
+            <div key={s} className="flex items-center flex-1">
               <div className={`
-                w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all
+                w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold text-xs sm:text-sm transition-all
                 ${s === step 
                   ? 'bg-indigo-600 text-white shadow-lg' 
                   : s < step 
@@ -109,7 +109,7 @@ export default function Signup() {
                 {s < step ? '✓' : s}
               </div>
               {s < 3 && (
-                <div className={`w-12 h-1 mx-2 transition-all ${
+                <div className={`flex-1 h-1 mx-1 sm:mx-2 transition-all ${
                   s < step ? 'bg-green-500' : 'bg-slate-200'
                 }`} />
               )}
@@ -118,12 +118,12 @@ export default function Signup() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-soft-lg p-8 border border-slate-200 min-h-96">
+        <div className="bg-white rounded-2xl shadow-soft-lg p-6 sm:p-8 border border-slate-200 min-h-96">
           {/* Error Message */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-              <div className="text-red-600 mt-0.5">⚠️</div>
-              <p className="text-sm text-red-700 font-medium">{error}</p>
+            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 sm:gap-3">
+              <div className="text-red-600 mt-0.5 flex-shrink-0">⚠️</div>
+              <p className="text-xs sm:text-sm text-red-700 font-medium">{error}</p>
             </div>
           )}
 

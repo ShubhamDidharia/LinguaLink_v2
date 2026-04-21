@@ -2,7 +2,7 @@ import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { LogOut, User, Home, Users, MessageCircle, Briefcase, Bell, CreditCard } from 'lucide-react'
 
-export default function Sidebar({ currentUser }) {
+export default function Sidebar({ currentUser, mobileOpen, onCloseMobile }) {
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -10,10 +10,16 @@ export default function Sidebar({ currentUser }) {
 
   const handleLogout = async () => {
     try {
+      onCloseMobile?.()
       navigate('/login', { replace: true })
     } catch (err) {
       console.error('Logout failed:', err)
     }
+  }
+
+  const handleNavigate = (path) => {
+    navigate(path)
+    onCloseMobile?.()
   }
 
   const menuItems = [
@@ -26,13 +32,21 @@ export default function Sidebar({ currentUser }) {
   ]
 
   return (
-    <div className="w-64 bg-white border-r border-slate-200 h-screen flex flex-col p-6 shadow-soft">
-      {/* Logo */}
+    <div className="w-full bg-white border-r border-slate-200 h-screen flex flex-col p-4 sm:p-6 shadow-soft">
+      {/* Logo - Hidden on mobile since header shows it */}
       <div
-        onClick={() => navigate('/discover')}
-        className="text-2xl font-bold text-indigo-600 mb-8 cursor-pointer hover:text-indigo-700 transition-colors"
+        onClick={() => handleNavigate('/discover')}
+        className="hidden sm:block text-2xl font-bold text-indigo-600 mb-8 cursor-pointer hover:text-indigo-700 transition-colors"
       >
         LinguaLink
+      </div>
+
+      {/* Logo Mobile - Smaller version */}
+      <div
+        onClick={() => handleNavigate('/discover')}
+        className="sm:hidden text-xl font-bold text-indigo-600 mb-6 cursor-pointer hover:text-indigo-700 transition-colors text-center"
+      >
+        LL
       </div>
 
       {/* Menu Items */}
@@ -40,11 +54,11 @@ export default function Sidebar({ currentUser }) {
         {menuItems.map((item) => (
           <div
             key={item.path}
-            onClick={() => navigate(item.path)}
+            onClick={() => handleNavigate(item.path)}
             className={`sidebar-link ${isActive(item.path) ? 'active' : ''}`}
           >
             <item.icon size={20} />
-            <span>{item.label}</span>
+            <span className="hidden sm:inline">{item.label}</span>
           </div>
         ))}
       </nav>
@@ -53,13 +67,13 @@ export default function Sidebar({ currentUser }) {
       <div className="border-t border-slate-200 pt-4 space-y-2">
         {currentUser && (
           <div
-            onClick={() => navigate(`/profile/${currentUser._id}`)}
-            className="flex items-center gap-3 p-3 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+            onClick={() => handleNavigate(`/profile/${currentUser._id}`)}
+            className="flex items-center gap-3 p-2 sm:p-3 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
           >
-            <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
               {currentUser.name.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="hidden sm:flex flex-1 min-w-0 flex-col">
               <p className="text-sm font-medium text-slate-900 truncate">{currentUser.name}</p>
               <p className="text-xs text-slate-600 truncate">{currentUser.email}</p>
             </div>
@@ -67,10 +81,10 @@ export default function Sidebar({ currentUser }) {
         )}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-2 text-slate-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors font-medium"
+          className="w-full flex items-center justify-center sm:justify-start gap-3 px-3 sm:px-4 py-2 text-slate-700 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors font-medium text-sm sm:text-base"
         >
           <LogOut size={20} />
-          <span>Logout</span>
+          <span className="hidden sm:inline">Logout</span>
         </button>
       </div>
     </div>

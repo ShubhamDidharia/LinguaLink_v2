@@ -88,3 +88,74 @@ export async function getUserById(req, res) {
     res.status(500).json({ error: 'Server error' })
   }
 }
+
+export async function updateProfile(req, res) {
+  try {
+    const userId = req.user.userId
+    const { name, bio, interests, languagesKnown, languagesLearning } = req.body
+
+    // Validate input
+    if (name && !name.trim()) {
+      return res.status(400).json({ error: 'Name cannot be empty' })
+    }
+
+    // Build update object with only provided fields
+    const updateData = {}
+    if (name !== undefined) updateData.name = name.trim()
+    if (bio !== undefined) updateData.bio = bio.trim()
+    if (interests !== undefined) updateData.interests = interests
+    if (languagesKnown !== undefined) updateData.languagesKnown = languagesKnown
+    if (languagesLearning !== undefined) updateData.languagesLearning = languagesLearning
+
+    const user = await User.findByIdAndUpdate(userId, updateData, { new: true }).select('-password')
+    if (!user) return res.status(404).json({ error: 'User not found' })
+
+    res.status(200).json(user)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
+  }
+}
+
+export async function deleteProfile(req, res) {
+  try {
+    const userId = req.user.userId
+    const { password } = req.body
+
+    if (!password) {
+      return res.status(400).json({ error: 'Password required to delete account' })
+    }
+
+    // Verify password
+    const user = await User.findById(userId)
+    if (!user) return res.status(404).json({ error: 'User not found' })
+
+    const match = await bcrypt.compare(password, user.password)
+    if (!match) return res.status(401).json({ error: 'Invalid password' })
+
+    // Import models for cascade delete
+    const Connection = (await import('../models/Connection.js')).default
+    const Message = (await import('../models/Message.js')).default
+
+    // Delete all connections
+    await Connection.deleteMany({
+      $or: [{ sender: userId }, { receiver: userId }]
+    })
+
+    // Delete all messages
+    await Message.deleteMany({
+      $or: [{ sender: userId }, { receiver: userId }]
+    })
+
+    // Delete user
+    await User.findByIdAndDelete(userId)
+
+    // Clear JWT cookie
+    res.cookie('jwt', '', { httpOnly: true, maxAge: 0 })
+
+    res.status(200).json({ message: 'Account deleted successfully' })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: 'Server error' })
+  }
+}

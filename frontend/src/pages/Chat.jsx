@@ -141,21 +141,23 @@ export default function Chat() {
 
   return (
     <MainLayout currentUser={currentUser} isLoading={isLoading}>
-      <div className="flex h-[calc(100vh-4rem)]">
-        {/* Conversations List */}
-        <div className="w-72 border-r border-slate-200 bg-white flex flex-col overflow-hidden">
-          <div className="p-6 border-b border-slate-200">
+      <div className="flex h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] flex-col md:flex-row">
+        {/* Conversations List - Mobile: hidden unless no friend selected */}
+        <div className={`w-full md:w-72 border-b md:border-b-0 md:border-r border-slate-200 bg-white flex flex-col overflow-hidden transition-all ${
+          selectedFriend ? 'hidden md:flex' : 'flex'
+        }`}>
+          <div className="p-4 sm:p-6 border-b border-slate-200">
             <div className="flex items-center gap-2 mb-2">
               <MessageCircle className="text-indigo-600" size={24} />
-              <h2 className="text-xl font-bold text-slate-900">Messages</h2>
+              <h2 className="text-lg sm:text-xl font-bold text-slate-900">Messages</h2>
             </div>
-            <p className="text-sm text-slate-600">{conversations.length} conversations</p>
+            <p className="text-xs sm:text-sm text-slate-600">{conversations.length} conversations</p>
           </div>
 
           {/* Conversations */}
           <div className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
-              <div className="p-6 text-center">
+              <div className="p-4 sm:p-6 text-center">
                 <p className="text-slate-600 text-sm">No conversations yet</p>
                 <p className="text-slate-500 text-xs mt-2">Go to Friends to start chatting</p>
               </div>
@@ -165,13 +167,13 @@ export default function Chat() {
                   <div
                     key={conv._id}
                     onClick={() => handleSelectFriend(conv)}
-                    className={`p-4 rounded-lg cursor-pointer transition-colors ${
+                    className={`p-3 sm:p-4 rounded-lg cursor-pointer transition-colors ${
                       selectedFriend?._id === conv._id
                         ? 'bg-indigo-50 border-l-4 border-indigo-600'
                         : 'hover:bg-slate-50'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                         {conv.user.name.charAt(0).toUpperCase()}
                       </div>
@@ -196,25 +198,34 @@ export default function Chat() {
           {selectedFriend ? (
             <>
               {/* Header */}
-              <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-soft">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-900">{selectedFriend.user.name}</h3>
-                  <p className="text-sm text-slate-600">{selectedFriend.user.email}</p>
-                  <p className="text-xs text-green-600 mt-1">● Online</p>
+              <div className="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-soft">
+                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                  <button
+                    onClick={() => setSelectedFriend(null)}
+                    className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0"
+                    aria-label="Back to conversations"
+                  >
+                    <ArrowLeft size={20} className="text-slate-900" />
+                  </button>
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-lg font-semibold text-slate-900 truncate">{selectedFriend.user.name}</h3>
+                    <p className="hidden sm:block text-sm text-slate-600">{selectedFriend.user.email}</p>
+                    <p className="text-xs sm:text-xs text-green-600 mt-0.5 sm:mt-1">● Online</p>
+                  </div>
                 </div>
-                <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
+                <div className="w-10 sm:w-12 h-10 sm:h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
                   {selectedFriend.user.name.charAt(0).toUpperCase()}
                 </div>
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col">
+              <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 flex flex-col">
                 {messages.length === 0 ? (
                   <div className="h-full flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-6xl mb-4">👋</p>
-                      <p className="text-slate-600 mb-2">Start a conversation!</p>
-                      <p className="text-sm text-slate-500">Send your first message to {selectedFriend.user.name}</p>
+                      <p className="text-4xl sm:text-6xl mb-3 sm:mb-4">👋</p>
+                      <p className="text-slate-600 mb-2 text-sm sm:text-base">Start a conversation!</p>
+                      <p className="text-xs sm:text-sm text-slate-500">Send your first message to {selectedFriend.user.name}</p>
                     </div>
                   </div>
                 ) : (
@@ -225,13 +236,13 @@ export default function Chat() {
                         className={`flex ${msg.sender._id === currentUser._id ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-xs px-4 py-2 rounded-lg ${
+                          className={`max-w-xs sm:max-w-sm lg:max-w-md px-3 sm:px-4 py-2 rounded-lg text-sm sm:text-base ${
                             msg.sender._id === currentUser._id
                               ? 'message-bubble-sent'
                               : 'message-bubble-received'
                           }`}
                         >
-                          <p className="text-sm break-words">{msg.content}</p>
+                          <p className="break-words">{msg.content}</p>
                           <p className={`text-xs mt-1 ${
                             msg.sender._id === currentUser._id
                               ? 'text-indigo-200'
@@ -251,32 +262,34 @@ export default function Chat() {
               </div>
 
               {/* Input */}
-              <div className="bg-white border-t border-slate-200 p-4 shadow-soft">
-                <div className="flex gap-3">
+              <div className="bg-white border-t border-slate-200 p-3 sm:p-4 shadow-soft">
+                <div className="flex gap-2 sm:gap-3">
                   <input
                     type="text"
                     value={messageInput}
                     onChange={e => setMessageInput(e.target.value)}
                     onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Type a message..."
-                    className="input-field flex-1"
+                    className="input-field flex-1 text-sm"
                   />
                   <button
                     onClick={handleSendMessage}
                     disabled={!messageInput.trim() || isSending}
-                    className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed px-4"
+                    className="btn-primary flex items-center gap-1 sm:gap-2 disabled:opacity-50 disabled:cursor-not-allowed px-3 sm:px-4 flex-shrink-0"
+                    aria-label="Send message"
                   >
                     <Send size={18} />
+                    <span className="hidden sm:inline">Send</span>
                   </button>
                 </div>
               </div>
             </>
           ) : (
             <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <MessageCircle size={48} className="mx-auto mb-4 text-slate-400" />
-                <p className="text-slate-600 text-lg font-medium">No chat selected</p>
-                <p className="text-slate-500 text-sm mt-2">
+              <div className="text-center px-4">
+                <MessageCircle size={40} className="mx-auto mb-3 sm:mb-4 text-slate-400" />
+                <p className="text-slate-600 text-base sm:text-lg font-medium">No chat selected</p>
+                <p className="text-slate-500 text-xs sm:text-sm mt-2">
                   {conversations.length > 0
                     ? 'Select a conversation from the left'
                     : 'Go to Friends to start a conversation'}
