@@ -19,38 +19,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes)
 
-// Create user
-// app.post('/api/users', async (req, res) => {
-//   try {
-//     const { name, email, password, bio, interests, languagesKnown, languagesLearning, subscription } = req.body
-//     if (!name || !email || !password) return res.status(400).json({ error: 'name, email and password are required' })
-
-//     const existing = await User.findOne({ email })
-//     if (existing) return res.status(400).json({ error: 'Email already registered' })
-
-//     const user = new User({ name, email, password, bio, interests, languagesKnown, languagesLearning, subscription })
-//     await user.save()
-//     const userSafe = user.toObject()
-//     delete userSafe.password
-//     res.status(201).json(userSafe)
-//   } catch (err) {
-//     console.error(err)
-//     res.status(500).json({ error: 'Server error' })
-//   }
-// })
-
-// List users (no passwords)
-app.get('/api/users', authMiddleware, async (req, res) => {
-  try {
-    const users = await User.find().select('-password')
-    res.json(users)
-  } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: 'Server error' })
-  }
-})
-
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/lingualink'
+const MONGO_URI = process.env.MONGO_URI
 
 app.listen(PORT, async () => {
   try {
