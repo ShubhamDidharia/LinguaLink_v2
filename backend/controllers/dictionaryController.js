@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai"; // Correct class name for 2026
 import 'dotenv/config';
+import { retryWithBackoff } from '../utils/retryUtils.js';
 
 // Initialize the client correctly
 const client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -21,16 +22,25 @@ Rules:
 - Keep values concise
 `;
 
-    const response = await client.models.generateContent({
-      model: "models/gemini-2.5-flash",
-      contents: [{
-        role: "user",
-        parts: [{ text: prompt }]
-      }],
-      config: {
-        responseMimeType: "application/json"
-      }
-    });
+// getting repeated 503 from gemini, need fix
+
+    // Wrap API call with retry logic
+    const response = await retryWithBackoff(
+      async () => {
+        return await client.models.generateContent({
+          model: "models/gemini-2.5-flash",
+          contents: [{
+            role: "user",
+            parts: [{ text: prompt }]
+          }],
+          config: {
+            responseMimeType: "application/json"
+          }
+        });
+      },
+      3, // max retries
+      1000 // initial delay in ms
+    );
 
     const responseText = (() => {
       if (!response) return "";
@@ -54,17 +64,28 @@ Rules:
 
   } catch (error) {
     console.error("Gemini API Error:", error);
-    const status = error?.status || 500;
-    const retryDelay = error?.details?.find(d => d["@type"]?.includes("RetryInfo"))?.retryDelay;
+    const status = error?.status || error?.response?.status || 500;
 
     if (status === 429) {
       return res.status(429).json({
         message: "AI Dictionary Service Error",
-        details: "Gemini free-tier quota exceeded. Please wait and retry.",
-        retryAfter: retryDelay || "",
+        details: "Gemini free-tier quota exceeded. Please wait a few minutes and try again.",
+        retryAfter: error?.details?.find(d => d["@type"]?.includes("RetryInfo"))?.retryDelay || "60s",
       });
     }
 
-    res.status(500).json({ message: "AI Dictionary Service Error", details: error.message || "Unknown error" });
+    if (status === 503) {
+      return res.status(503).json({
+        message: "Gemini API Temporarily Unavailable",
+        details: "The service is experiencing high demand. Please try again in a few moments.",
+        retryable: true,
+      });
+    }
+
+    res.status(500).json({ 
+      message: "AI Dictionary Service Error", 
+      details: error.message || "Unknown error",
+      retryable: false
+    });
   }
 };

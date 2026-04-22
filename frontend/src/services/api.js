@@ -113,10 +113,52 @@ export async function translateAndDefine(text, targetLanguage) {
   return res.data
 }
 
-// export async function translateAndDefine(text, targetLanguage) {
-//   const res = await client.post('/api/dictionary/translate', { text, targetLanguage });
-//   return res.data;
-// }
+// Workspace endpoints
+export async function getUserWorkspaces() {
+  const res = await client.get('/api/workspaces')
+  return res.data
+}
+
+export async function createWorkspace(language) {
+  const res = await client.post('/api/workspaces', { language })
+  return res.data
+}
+
+export async function deleteWorkspace(workspaceId) {
+  const res = await client.delete(`/api/workspaces/${workspaceId}`)
+  return res.data
+}
+
+export async function getDeletedWorkspaceLanguages() {
+  const res = await client.get('/api/workspaces/deleted-languages')
+  return res.data
+}
+
+// Vocabulary endpoints
+export async function getVocabularies(workspaceId) {
+  const res = await client.get(`/api/workspaces/${workspaceId}/vocabularies`)
+  return res.data
+}
+
+export async function addVocabulary(workspaceId, vocabData) {
+  const res = await client.post(`/api/workspaces/${workspaceId}/vocabularies`, vocabData)
+  return res.data
+}
+
+export async function updateVocabulary(vocabularyId, vocabData) {
+  const res = await client.put(`/api/workspaces/vocabularies/${vocabularyId}`, vocabData)
+  return res.data
+}
+
+export async function deleteVocabulary(vocabularyId) {
+  const res = await client.delete(`/api/workspaces/vocabularies/${vocabularyId}`)
+  return res.data
+}
+
+export async function addVocabularyFromAIDictionary(word, meaning) {
+  const res = await client.post('/api/workspaces/vocabularies/ai-add', { word, meaning })
+  return res.data
+}
 
 export default {
   login,
@@ -138,5 +180,13 @@ export default {
   updateProfile,
   deleteProfile,
   translateAndDefine,
-  
+  getUserWorkspaces,
+  createWorkspace,
+  deleteWorkspace,
+  getDeletedWorkspaceLanguages,
+  getVocabularies,
+  addVocabulary,
+  updateVocabulary,
+  deleteVocabulary,
+  addVocabularyFromAIDictionary,
 }

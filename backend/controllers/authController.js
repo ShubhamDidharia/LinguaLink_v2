@@ -1,8 +1,9 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import User from '../models/User.js'
+import { createDefaultWorkspaces, updateUserWorkspaces } from '../utils/workspaceUtils.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret'
+const JWT_SECRET = process.env.JWT_SECRET 
 
 function generateTokenAndSetCookie(userId, res) {
   const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' })
@@ -24,6 +25,11 @@ export async function signUp(req, res) {
 
     const user = new User({ name, email, password, bio, interests, languagesKnown, languagesLearning, subscription })
     await user.save()
+
+    // Create default workspaces for learning languages
+    if (languagesLearning && languagesLearning.length > 0) {
+      await createDefaultWorkspaces(user._id, languagesLearning)
+    }
 
     generateTokenAndSetCookie(user._id, res)
     const userSafe = user.toObject()
@@ -109,6 +115,11 @@ export async function updateProfile(req, res) {
 
     const user = await User.findByIdAndUpdate(userId, updateData, { new: true }).select('-password')
     if (!user) return res.status(404).json({ error: 'User not found' })
+
+    // Create workspaces for any newly added learning languages
+    if (languagesLearning && languagesLearning.length > 0) {
+      await updateUserWorkspaces(userId, languagesLearning)
+    }
 
     res.status(200).json(user)
   } catch (err) {
