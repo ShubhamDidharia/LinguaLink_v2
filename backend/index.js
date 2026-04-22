@@ -8,6 +8,7 @@ import User from './models/User.js'
 import authRoutes from './routes/authRoutes.js'
 import connectionRoutes from './routes/connectionRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
+import dictionaryRoutes from './routes/dictionaryRoutes.js'
 import authMiddleware from './middleware/authMiddleware.js'
 import INTERESTS from './data/interests.js'
 
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/connections', authMiddleware, connectionRoutes)
 app.use('/api/messages', authMiddleware, messageRoutes)
+app.use('/api/dictionary', authMiddleware, dictionaryRoutes)
 
 // Serve interests list to frontend
 app.get('/api/interests', (req, res) => {

@@ -108,6 +108,16 @@ export async function deleteProfile(password) {
   return res.data
 }
 
+export async function translateAndDefine(text, targetLanguage) {
+  const res = await client.post('/api/dictionary/translate', { text, targetLanguage })
+  return res.data
+}
+
+// export async function translateAndDefine(text, targetLanguage) {
+//   const res = await client.post('/api/dictionary/translate', { text, targetLanguage });
+//   return res.data;
+// }
+
 export default {
   login,
   signup,
@@ -126,5 +136,7 @@ export default {
   getConversations,
   markMessagesAsRead,
   updateProfile,
-  deleteProfile
+  deleteProfile,
+  translateAndDefine,
+  
 }

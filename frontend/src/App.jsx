@@ -9,10 +9,12 @@ import Chat from './pages/Chat'
 import Workspace from './pages/Workspace'
 import Notifications from './pages/Notifications'
 import Billing from './pages/Billing'
+import DictionaryButton from './components/DictionaryButton'
 
 export default function App() {
   return (
     <BrowserRouter>
+      <DictionaryButton />
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
