@@ -31,6 +31,12 @@ export async function sendMessage(req, res) {
     await message.save()
     await message.populate('sender receiver', '-password')
 
+    // Emit to receiver's socket room
+    const io = req.app.locals.io;
+    if (io) {
+      io.to(receiverId.toString()).emit('newMessage', message);
+    }
+
     res.status(201).json(message)
   } catch (err) {
     console.error(err)
@@ -84,59 +90,45 @@ export async function getConversations(req, res) {
   try {
     const userId = req.user.userId
 
-    // Get all unique conversations for this user
-    const messages = await Message.aggregate([
-      {
-        $match: {
-          $or: [{ sender: userId }, { receiver: userId }]
-        }
-      },
-      {
-        $sort: { createdAt: -1 }
-      },
-      {
-        $group: {
-          _id: {
-            $cond: [
-              { $eq: ['$sender', userId] },
-              '$receiver',
-              '$sender'
-            ]
-          },
-          lastMessage: { $first: '$$ROOT' }
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'user'
-        }
-      },
-      {
-        $unwind: '$user'
-      },
-      {
-        $project: {
-          _id: 1,
-          user: { $arrayElemAt: ['$user', 0] },
-          lastMessage: 1
-        }
-      }
-    ])
+    // Find all accepted connections for this user
+    const connections = await Connection.find({
+      $or: [{ sender: userId }, { receiver: userId }],
+      status: 'accepted'
+    }).populate('sender receiver', '-password')
 
-    // Remove password from user objects
-    const conversations = messages.map(msg => ({
-      ...msg,
-      user: {
-        _id: msg.user._id,
-        name: msg.user.name,
-        email: msg.user.email,
-        bio: msg.user.bio,
-        interests: msg.user.interests
-      }
-    }))
+    if (!connections.length) {
+      return res.status(200).json([])
+    }
+
+    const conversations = [];
+
+    // For each connection, get the last message and the other user
+    for (const conn of connections) {
+      const otherUser = conn.sender._id.toString() === userId.toString() ? conn.receiver : conn.sender;
+      
+      const lastMessage = await Message.findOne({
+        $or: [
+          { sender: userId, receiver: otherUser._id },
+          { sender: otherUser._id, receiver: userId }
+        ]
+      }).sort({ createdAt: -1 })
+
+      conversations.push({
+        _id: conn._id,
+        user: {
+          _id: otherUser._id,
+          name: otherUser.name,
+          email: otherUser.email,
+          bio: otherUser.bio,
+          interests: otherUser.interests
+        },
+        lastMessage: lastMessage || null,
+        updatedAt: lastMessage ? lastMessage.createdAt : conn.updatedAt
+      })
+    }
+
+    // Sort conversations by last message time, or connection time
+    conversations.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
 
     res.status(200).json(conversations)
   } catch (err) {

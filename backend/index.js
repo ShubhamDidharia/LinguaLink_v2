@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import { Server } from 'socket.io'
 
 import connectDB from './utils/db.js'
 import User from './models/User.js'
@@ -62,6 +63,51 @@ const server = app.listen(PORT, async () => {
     console.error('Failed to connect to MongoDB, shutting down.')
     process.exit(1)
   }
+})
+
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+})
+
+app.locals.io = io
+
+const onlineUsers = new Set()
+
+io.on('connection', (socket) => {
+  const userId = socket.handshake.query.userId
+  if (userId) {
+    socket.join(userId)
+    onlineUsers.add(userId)
+    io.emit('userOnline', userId)
+    console.log(`User connected via socket: ${userId}`)
+  }
+
+  // Send initial list to the connected client
+  socket.emit('onlineUsers', Array.from(onlineUsers))
+
+  // Typing indicators
+  socket.on('typing', ({ receiverId }) => {
+    socket.to(receiverId).emit('userTyping', userId)
+  })
+
+  socket.on('stopTyping', ({ receiverId }) => {
+    socket.to(receiverId).emit('userStopTyping', userId)
+  })
+
+  socket.on('disconnect', () => {
+    if (userId) {
+      const userRoom = io.sockets.adapter.rooms.get(userId)
+      if (!userRoom || userRoom.size === 0) {
+        onlineUsers.delete(userId)
+        io.emit('userOffline', userId)
+      }
+      console.log(`User disconnected via socket: ${userId}`)
+    }
+  })
 })
 
 // Graceful shutdown

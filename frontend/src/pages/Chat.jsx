@@ -4,6 +4,7 @@ import { getMe, getConversations, getMessages, sendMessage, markMessagesAsRead, 
 import { showSuccess, showError } from '../utils/toast'
 import MainLayout from '../components/MainLayout'
 import { Send, MessageCircle, ArrowLeft } from 'lucide-react'
+import { io } from 'socket.io-client'
 
 export default function Chat() {
   const { friendId } = useParams()
@@ -14,44 +15,121 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(true)
   const [messageInput, setMessageInput] = useState('')
   const [isSending, setIsSending] = useState(false)
+  const [onlineUsers, setOnlineUsers] = useState(new Set())
+  const [isTyping, setIsTyping] = useState(false)
+  const [typingTimeout, setTypingTimeout] = useState(null)
   const navigate = useNavigate()
   const messagesEndRef = useRef(null)
-  const pollIntervalRef = useRef(null)
+  const chatContainerRef = useRef(null)
+  const socketRef = useRef(null)
+  const selectedFriendRef = useRef(null)
+
+  useEffect(() => {
+    selectedFriendRef.current = selectedFriend
+    setIsTyping(false) // reset typing when changing friends
+  }, [selectedFriend])
+
+  const formatDateLabel = (dateString) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    if (date.toDateString() === today.toDateString()) return 'Today'
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday'
+    
+    const d = date.getDate().toString().padStart(2, '0')
+    const m = (date.getMonth() + 1).toString().padStart(2, '0')
+    const y = date.getFullYear()
+    return `${d}/${m}/${y}`
+  }
+
+  const groupMessagesByDate = (msgs) => {
+    const groups = []
+    let currentDate = null
+    
+    msgs.forEach(msg => {
+      const msgDate = new Date(msg.createdAt).toDateString()
+      if (msgDate !== currentDate) {
+        currentDate = msgDate
+        groups.push({ type: 'date', label: formatDateLabel(msg.createdAt), id: `date-${msg._id}` })
+      }
+      groups.push({ type: 'message', data: msg })
+    })
+    return groups
+  }
 
   // Auto-scroll to bottom when messages change
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+    }
   }
 
   useEffect(() => {
     scrollToBottom()
   }, [messages])
 
-  // Poll for new messages every 2 seconds
+  // Socket.IO connection
   useEffect(() => {
-    if (!selectedFriend || !currentUser) return
+    if (!currentUser) return
 
-    const pollMessages = async () => {
-      try {
-        const latestMessages = await getMessages(selectedFriend._id)
-        setMessages(latestMessages)
-      } catch (err) {
-        console.error('Failed to poll messages:', err)
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000'
+    socketRef.current = io(apiUrl, {
+      query: { userId: currentUser._id }
+    })
+
+    socketRef.current.on('newMessage', (message) => {
+      const currentSelected = selectedFriendRef.current
+      const senderId = message.sender._id || message.sender
+
+      // If viewing the chat with the sender, append message and mark read
+      if (currentSelected && senderId === currentSelected.user._id) {
+        setMessages(prev => [...prev, message])
+        markMessagesAsRead(senderId).catch(console.error)
       }
-    }
 
-    // Initial poll
-    pollMessages()
+      // Update conversations list (move to top and update lastMessage)
+      setConversations(prev => {
+        const newConvs = [...prev]
+        const idx = newConvs.findIndex(c => c.user._id === senderId)
+        if (idx !== -1) {
+          newConvs[idx].lastMessage = message
+          newConvs[idx].updatedAt = message.createdAt
+          const [moved] = newConvs.splice(idx, 1)
+          newConvs.unshift(moved)
+        }
+        return newConvs
+      })
+    })
 
-    // Set up interval for polling
-    pollIntervalRef.current = setInterval(pollMessages, 2000)
+    socketRef.current.on('onlineUsers', (users) => setOnlineUsers(new Set(users)))
+    socketRef.current.on('userOnline', (userId) => setOnlineUsers(prev => new Set(prev).add(userId)))
+    socketRef.current.on('userOffline', (userId) => {
+      setOnlineUsers(prev => {
+        const next = new Set(prev)
+        next.delete(userId)
+        return next
+      })
+    })
+
+    socketRef.current.on('userTyping', (userId) => {
+      if (selectedFriendRef.current && userId === selectedFriendRef.current.user._id) {
+        setIsTyping(true)
+      }
+    })
+
+    socketRef.current.on('userStopTyping', (userId) => {
+      if (selectedFriendRef.current && userId === selectedFriendRef.current.user._id) {
+        setIsTyping(false)
+      }
+    })
 
     return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current)
-      }
+      if (socketRef.current) socketRef.current.disconnect()
     }
-  }, [selectedFriend, currentUser])
+  }, [currentUser])
 
   useEffect(() => {
     async function loadInitialData() {
@@ -65,7 +143,7 @@ export default function Chat() {
         // If friendId is provided, try to select that friend
         if (friendId) {
           // First check if there's an existing conversation
-          let friend = convs.find(c => c._id.toString() === friendId)
+          let friend = convs.find(c => c.user._id.toString() === friendId)
           
           // If no conversation, fetch the friend's details from User API
           if (!friend) {
@@ -91,9 +169,9 @@ export default function Chat() {
           // Default to first conversation
           setSelectedFriend(convs[0])
           try {
-            const msgs = await getMessages(convs[0]._id)
+            const msgs = await getMessages(convs[0].user._id)
             setMessages(msgs)
-            await markMessagesAsRead(convs[0]._id)
+            await markMessagesAsRead(convs[0].user._id)
           } catch (err) {
             console.error('Failed to load messages:', err)
           }
@@ -112,11 +190,23 @@ export default function Chat() {
   const handleSelectFriend = async (friend) => {
     setSelectedFriend(friend)
     try {
-      const msgs = await getMessages(friend._id)
+      const msgs = await getMessages(friend.user._id)
       setMessages(msgs)
-      await markMessagesAsRead(friend._id)
+      await markMessagesAsRead(friend.user._id)
     } catch (err) {
       console.error('Failed to load messages:', err)
+    }
+  }
+
+  const handleInputChange = (e) => {
+    setMessageInput(e.target.value)
+    if (socketRef.current && selectedFriend) {
+      socketRef.current.emit('typing', { receiverId: selectedFriend.user._id })
+      if (typingTimeout) clearTimeout(typingTimeout)
+      const timeout = setTimeout(() => {
+        socketRef.current.emit('stopTyping', { receiverId: selectedFriend.user._id })
+      }, 2000)
+      setTypingTimeout(timeout)
     }
   }
 
@@ -125,13 +215,28 @@ export default function Chat() {
 
     try {
       setIsSending(true)
-      const newMessage = await sendMessage(selectedFriend._id, messageInput)
+      
+      if (typingTimeout) clearTimeout(typingTimeout)
+      if (socketRef.current) {
+        socketRef.current.emit('stopTyping', { receiverId: selectedFriend.user._id })
+      }
+
+      const newMessage = await sendMessage(selectedFriend.user._id, messageInput)
       setMessages([...messages, newMessage])
       setMessageInput('')
       
       // Refresh conversations list to update last message
-      const convs = await getConversations()
-      setConversations(convs)
+      setConversations(prev => {
+        const newConvs = [...prev]
+        const idx = newConvs.findIndex(c => c.user._id === selectedFriend.user._id)
+        if (idx !== -1) {
+          newConvs[idx].lastMessage = newMessage
+          newConvs[idx].updatedAt = newMessage.createdAt
+          const [moved] = newConvs.splice(idx, 1)
+          newConvs.unshift(moved)
+        }
+        return newConvs
+      })
     } catch (err) {
       console.error('Failed to send message:', err)
       showError('Failed to send message')
@@ -169,7 +274,7 @@ export default function Chat() {
                     key={conv._id}
                     onClick={() => handleSelectFriend(conv)}
                     className={`p-3 sm:p-4 rounded-lg cursor-pointer transition-colors ${
-                      selectedFriend?._id === conv._id
+                      selectedFriend?.user._id === conv.user._id
                         ? 'bg-indigo-50 border-l-4 border-indigo-600'
                         : 'hover:bg-slate-50'
                     }`}
@@ -179,8 +284,13 @@ export default function Chat() {
                         {conv.user.name.charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-slate-900 text-sm truncate">
-                          {conv.user.name}
+                        <p className="font-medium text-slate-900 text-sm truncate flex justify-between items-center">
+                          <span>{conv.user.name}</span>
+                          {conv.updatedAt && (
+                            <span className="text-[10px] text-slate-400 font-normal ml-2 flex-shrink-0">
+                              {formatDateLabel(conv.updatedAt)}
+                            </span>
+                          )}
                         </p>
                         <p className="text-xs text-slate-600 truncate line-clamp-1">
                           {conv.lastMessage?.content || 'No messages yet'}
@@ -211,7 +321,13 @@ export default function Chat() {
                   <div className="min-w-0">
                     <h3 className="text-sm sm:text-lg font-semibold text-slate-900 truncate">{selectedFriend.user.name}</h3>
                     <p className="hidden sm:block text-sm text-slate-600">{selectedFriend.user.email}</p>
-                    <p className="text-xs sm:text-xs text-green-600 mt-0.5 sm:mt-1">● Online</p>
+                    {onlineUsers.has(selectedFriend.user._id) ? (
+                      <p className="text-xs sm:text-xs text-green-600 mt-0.5 sm:mt-1 font-medium flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Online
+                      </p>
+                    ) : (
+                      <p className="text-xs sm:text-xs text-slate-500 mt-0.5 sm:mt-1 font-medium">Offline</p>
+                    )}
                   </div>
                 </div>
                 <div className="w-10 sm:w-12 h-10 sm:h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
@@ -220,7 +336,7 @@ export default function Chat() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 flex flex-col">
+              <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 flex flex-col relative scroll-smooth">
                 {messages.length === 0 ? (
                   <div className="h-full flex items-center justify-center">
                     <div className="text-center">
@@ -231,7 +347,19 @@ export default function Chat() {
                   </div>
                 ) : (
                   <>
-                    {messages.map(msg => (
+                    {groupMessagesByDate(messages).map(item => {
+                      if (item.type === 'date') {
+                        return (
+                          <div key={item.id} className="flex justify-center my-3 sm:my-4">
+                            <span className="bg-slate-200/60 text-slate-600 text-[10px] sm:text-[11px] px-3 py-1 rounded-full font-semibold">
+                              {item.label}
+                            </span>
+                          </div>
+                        )
+                      }
+                      
+                      const msg = item.data;
+                      return (
                       <div
                         key={msg._id}
                         className={`flex ${msg.sender._id === currentUser._id ? 'justify-end' : 'justify-start'}`}
@@ -256,7 +384,16 @@ export default function Chat() {
                           </p>
                         </div>
                       </div>
-                    ))}
+                    )})}
+                    {isTyping && (
+                      <div className="flex justify-start">
+                        <div className="bg-slate-100 text-slate-500 px-4 py-2 rounded-lg text-sm rounded-bl-none flex items-center gap-1.5 w-fit">
+                          <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                          <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                          <span className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                        </div>
+                      </div>
+                    )}
                     <div ref={messagesEndRef} />
                   </>
                 )}
@@ -268,7 +405,7 @@ export default function Chat() {
                   <input
                     type="text"
                     value={messageInput}
-                    onChange={e => setMessageInput(e.target.value)}
+                    onChange={handleInputChange}
                     onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
                     placeholder="Type a message..."
                     className="input-field flex-1 text-sm"
