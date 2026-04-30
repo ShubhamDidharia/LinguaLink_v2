@@ -142,7 +142,7 @@ export default function Chat() {
 
   return (
     <MainLayout currentUser={currentUser} isLoading={isLoading}>
-      <div className="flex h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] flex-col md:flex-row">
+      <div className="flex h-[calc(100vh-8rem)] md:h-[calc(100vh-4rem)] flex-col md:flex-row bg-slate-50">
         {/* Conversations List - Mobile: hidden unless no friend selected */}
         <div className={`w-full md:w-72 border-b md:border-b-0 md:border-r border-slate-200 bg-white flex flex-col overflow-hidden transition-all ${
           selectedFriend ? 'hidden md:flex' : 'flex'
@@ -199,7 +199,7 @@ export default function Chat() {
           {selectedFriend ? (
             <>
               {/* Header */}
-              <div className="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-soft">
+              <div className="bg-white border-b border-slate-200 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                   <button
                     onClick={() => setSelectedFriend(null)}
@@ -263,7 +263,7 @@ export default function Chat() {
               </div>
 
               {/* Input */}
-              <div className="bg-white border-t border-slate-200 p-3 sm:p-4 shadow-soft">
+              <div className="bg-white border-t border-slate-200 p-3 sm:p-4 shadow-sm">
                 <div className="flex gap-2 sm:gap-3">
                   <input
                     type="text"

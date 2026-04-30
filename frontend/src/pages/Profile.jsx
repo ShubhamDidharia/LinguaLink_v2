@@ -184,7 +184,7 @@ export default function Profile() {
 
   return (
     <MainLayout currentUser={currentUser}>
-      <div className="p-4 sm:p-6 lg:p-8">
+      <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
@@ -195,7 +195,7 @@ export default function Profile() {
         </button>
 
         {/* Profile Header */}
-        <div className="card mb-8">
+        <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 mb-8 border border-slate-200">
           {isEditing ? (
             // EDIT MODE
             <div className="space-y-4 sm:space-y-6">

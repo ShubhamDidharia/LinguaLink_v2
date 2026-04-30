@@ -31,7 +31,7 @@ export default function Friends() {
 
   return (
     <MainLayout currentUser={currentUser} isLoading={isLoading}>
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2">
@@ -45,7 +45,7 @@ export default function Friends() {
 
         {/* Friends List */}
         {friends.length === 0 ? (
-          <div className="text-center py-16 card bg-slate-50 border-dashed">
+          <div className="text-center py-16 bg-white rounded-2xl shadow-md bg-slate-50 border border-dashed border-slate-200">
             <div className="text-6xl mb-4">👋</div>
             <p className="text-xl text-slate-600 mb-2">No friends yet</p>
             <p className="text-slate-500 mb-6">Start connecting with other language learners</p>
@@ -59,7 +59,7 @@ export default function Friends() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {friends.map(friend => (
-              <div key={friend._id} className="card hover:shadow-soft-lg transition-shadow">
+              <div key={friend._id} className="bg-white/80 backdrop-blur-md border border-slate-200/50 rounded-2xl shadow-soft-lg p-6 hover:shadow-soft-lg transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-slate-900 mb-1">

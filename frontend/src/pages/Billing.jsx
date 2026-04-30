@@ -71,7 +71,7 @@ export default function Billing() {
 
   return (
     <MainLayout currentUser={currentUser} isLoading={isLoading}>
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8 bg-gradient-to-br from-amber-50 via-white to-purple-100 min-h-screen">
         <div className="flex items-center gap-3 mb-8">
           <CreditCard className="text-indigo-600" size={28} />
           <h1 className="text-4xl font-bold text-slate-900">Billing & Plans</h1>
@@ -79,7 +79,7 @@ export default function Billing() {
 
         {/* Current Plan */}
         {currentUser && (
-          <div className="mb-12 p-6 bg-indigo-50 border border-indigo-200 rounded-lg">
+          <div className="mb-12 p-6 bg-indigo-50/80 backdrop-blur-md border border-indigo-200/50 rounded-xl">
             <p className="text-sm text-indigo-700 font-medium mb-1">Current Plan</p>
             <p className="text-2xl font-bold text-slate-900">
               {currentUser.subscription ? 'Premium' : 'Basic'}
@@ -97,7 +97,7 @@ export default function Billing() {
           {plans.map(plan => (
             <div
               key={plan.name}
-              className={`card flex flex-col ${
+              className={`bg-white/80 backdrop-blur-md border border-slate-200/50 rounded-2xl shadow-soft-lg p-6 flex flex-col ${
                 plan.recommended
                   ? 'ring-2 ring-indigo-600 shadow-soft-lg relative'
                   : ''

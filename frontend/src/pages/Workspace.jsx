@@ -126,7 +126,7 @@ export default function Workspace() {
 
   return (
     <MainLayout currentUser={currentUser} isLoading={loading}>
-      <div className="p-6 sm:p-8">
+      <div className="p-6 sm:p-8 bg-slate-50 min-h-screen">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
@@ -146,7 +146,7 @@ export default function Workspace() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar - Language Folders */}
           <div className="lg:col-span-1">
-            <div className="card sticky top-6 p-6">
+            <div className="bg-white rounded-2xl sticky top-6 p-6 shadow-md border border-slate-200">
               <h2 className="text-lg font-bold text-slate-900 mb-4">Languages</h2>
 
               <div className="space-y-2 mb-6 max-h-96 overflow-y-auto">

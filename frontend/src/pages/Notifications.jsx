@@ -46,14 +46,14 @@ export default function Notifications() {
 
   return (
     <MainLayout currentUser={currentUser} isLoading={isLoading}>
-      <div className="p-8">
+      <div className="p-4 sm:p-6 lg:p-8 bg-slate-50 min-h-screen">
         <div className="flex items-center gap-3 mb-8">
           <Bell className="text-indigo-600" size={28} />
           <h1 className="text-4xl font-bold text-slate-900">Notifications</h1>
         </div>
 
         {pendingConnections.length === 0 ? (
-          <div className="card bg-slate-50 border-dashed">
+          <div className="bg-white rounded-2xl shadow-md bg-slate-50 border border-dashed border-slate-200">
             <div className="text-center py-16">
               <Bell size={48} className="mx-auto mb-4 text-slate-400" />
               <p className="text-xl text-slate-600 mb-2">No pending requests</p>
@@ -63,7 +63,7 @@ export default function Notifications() {
         ) : (
           <div className="space-y-4">
             {pendingConnections.map(conn => (
-              <div key={conn._id} className="card flex items-center justify-between">
+              <div key={conn._id} className="bg-white rounded-2xl shadow-md p-6 border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold">
                     {conn.sender.name.charAt(0).toUpperCase()}

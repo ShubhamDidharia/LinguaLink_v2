@@ -129,22 +129,22 @@ const DictionaryModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <header className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-800">Smart Dictionary & Translator</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-slate-200/50">
+        <header className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200/50 bg-white/50">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900">Smart Dictionary & Translator</h2>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-900 transition-colors">
             <X size={24} />
           </button>
         </header>
 
-        <div className="p-6 flex-grow overflow-y-auto">
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="p-4 sm:p-6 flex-grow overflow-y-auto">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Enter a word or phrase..."
-              className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+              className="flex-grow p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition input-field"
               rows="3"
               disabled={loading}
             />
@@ -152,7 +152,7 @@ const DictionaryModal = ({ isOpen, onClose }) => {
               <select
                 value={targetLanguage}
                 onChange={(e) => setTargetLanguage(e.target.value)}
-                className="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="p-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none input-field"
                 disabled={loading}
               >
                 {languages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
@@ -160,63 +160,63 @@ const DictionaryModal = ({ isOpen, onClose }) => {
               <button
                 onClick={handleSearch}
                 disabled={loading}
-                className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center disabled:bg-blue-300"
+                className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-3 rounded-lg font-semibold hover:shadow-soft transition-all flex items-center justify-center disabled:opacity-50 gap-2"
               >
                 {loading ? <Loader2 className="animate-spin" size={20} /> : <Search size={20} />}
-                <span className="ml-2">{loading ? 'Processing...' : 'Search'}</span>
+                <span className="hidden sm:inline">{loading ? 'Processing...' : 'Search'}</span>
               </button>
             </div>
           </div>
 
           {/* Loading Message with retry info */}
           {loadingMessage && (
-            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
+            <div className="mb-4 p-4 bg-blue-50/80 border border-blue-200/50 rounded-lg flex items-start gap-3">
               <Loader2 className="animate-spin text-blue-600 flex-shrink-0 mt-0.5" size={18} />
               <div>
-                <p className="text-blue-700 font-medium">{loadingMessage}</p>
+                <p className="text-blue-700 font-medium text-sm">{loadingMessage}</p>
                 <p className="text-xs text-blue-600 mt-1">The API is working on your request with automatic retries...</p>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+            <div className="mb-4 p-4 bg-red-50/80 border border-red-200/50 rounded-lg flex items-start gap-3">
               <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
               <div>
-                <p className="text-red-700 font-medium">Error</p>
-                <p className="text-red-600 text-sm mt-1">{error}</p>
+                <p className="text-red-700 font-medium text-sm">Error</p>
+                <p className="text-red-600 text-xs mt-1">{error}</p>
               </div>
             </div>
           )}
           
           {vocabSuccess && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3">
+            <div className="mb-4 p-4 bg-green-50/80 border border-green-200/50 rounded-lg flex items-start gap-3">
               <div className="text-green-600 flex-shrink-0 mt-0.5">✓</div>
-              <p className="text-green-700 font-medium">{vocabSuccess}</p>
+              <p className="text-green-700 font-medium text-sm">{vocabSuccess}</p>
             </div>
           )}
 
           {result && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Translation ({result.language})</h3>
-                <p className="text-2xl font-bold text-blue-600">{result.translation}</p>
+                <h3 className="text-sm sm:text-base font-semibold text-slate-700 mb-2 uppercase tracking-wide">Translation ({result.language})</h3>
+                <p className="text-xl sm:text-2xl font-bold text-indigo-600">{result.translation}</p>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Meaning / Definition</h3>
-                <p className="text-gray-800 bg-gray-100 p-4 rounded-lg">{result.meaning}</p>
+                <h3 className="text-sm sm:text-base font-semibold text-slate-700 mb-2 uppercase tracking-wide">Meaning / Definition</h3>
+                <p className="text-sm sm:text-base text-slate-800 bg-slate-50/80 backdrop-blur-sm p-4 rounded-lg border border-slate-200/50">{result.meaning}</p>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Example Sentences</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600">
+                <h3 className="text-sm sm:text-base font-semibold text-slate-700 mb-2 uppercase tracking-wide">Example Sentences</h3>
+                <ul className="list-disc list-inside space-y-2 text-slate-600 text-sm sm:text-base">
                   {result.examples.map((ex, i) => <li key={i}>{ex}</li>)}
                 </ul>
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Synonyms</h3>
+                <h3 className="text-sm sm:text-base font-semibold text-slate-700 mb-2 uppercase tracking-wide">Synonyms</h3>
                 <div className="flex flex-wrap gap-2">
                   {result.synonyms.map((syn, i) => (
-                    <span key={i} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                    <span key={i} className="bg-indigo-100/80 text-indigo-700 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium border border-indigo-200/50">
                       {syn}
                     </span>
                   ))}
@@ -224,11 +224,11 @@ const DictionaryModal = ({ isOpen, onClose }) => {
               </div>
 
               {/* Add to Vocab Button */}
-              <div className="border-t border-gray-300 pt-4 mt-4">
+              <div className="border-t border-slate-200/50 pt-4 mt-4 sm:mt-6">
                 <button
                   onClick={handleAddToVocab}
                   disabled={addingToVocab}
-                  className="w-full bg-indigo-600 text-white p-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 disabled:bg-indigo-400"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white p-3 rounded-lg font-semibold hover:shadow-soft transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-sm sm:text-base"
                 >
                   {addingToVocab ? (
                     <>
@@ -242,7 +242,7 @@ const DictionaryModal = ({ isOpen, onClose }) => {
                     </>
                   )}
                 </button>
-                <p className="text-xs text-gray-500 text-center mt-2">
+                <p className="text-xs text-slate-600 text-center mt-2">
                   Automatically adds to your {result.language} language folder
                 </p>
               </div>

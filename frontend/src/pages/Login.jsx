@@ -34,7 +34,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-slate-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-purple-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
       <div className="w-full max-w-md">
         {/* Logo & Header */}
         <button
@@ -51,7 +51,7 @@ export default function Login() {
         </button>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-soft-lg p-6 sm:p-8 border border-slate-200">
+        <div className="bg-white/85 rounded-2xl shadow-lg p-6 sm:p-8 border border-slate-200/50">
           {/* Error Message */}
           {error && (
             <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 sm:gap-3">
