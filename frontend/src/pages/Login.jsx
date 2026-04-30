@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../services/api'
+import { showSuccess, showError } from '../utils/toast'
 import { Mail, Lock, LogIn } from 'lucide-react'
 
 export default function Login() {
@@ -20,10 +21,12 @@ export default function Login() {
       localStorage.setItem('user', JSON.stringify(user))
       setEmail('')
       setPassword('')
+      showSuccess(`Welcome back, ${user.name}! 👋`)
       navigate('/discover', { replace: true })
     } catch (err) {
       const msg = err?.error || err?.message || 'Login failed. Please try again.'
       setError(msg)
+      showError(msg)
       console.error('Login error:', err)
     } finally {
       setLoading(false)

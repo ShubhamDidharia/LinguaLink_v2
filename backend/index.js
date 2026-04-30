@@ -10,8 +10,10 @@ import connectionRoutes from './routes/connectionRoutes.js'
 import messageRoutes from './routes/messageRoutes.js'
 import dictionaryRoutes from './routes/dictionaryRoutes.js'
 import workspaceRoutes from './routes/workspaceRoutes.js'
+import emailRoutes from './routes/emailRoutes.js'
 import authMiddleware from './middleware/authMiddleware.js'
 import INTERESTS from './data/interests.js'
+import { initializeDailyEmailSchedules, stopAllEmailSchedules } from './services/emailScheduler.js'
 
 const app = express()
 const PORT = process.env.PORT || 4000
@@ -29,6 +31,7 @@ app.use('/api/connections', authMiddleware, connectionRoutes)
 app.use('/api/messages', authMiddleware, messageRoutes)
 app.use('/api/dictionary', authMiddleware, dictionaryRoutes)
 app.use('/api/workspaces', workspaceRoutes)
+app.use('/api/email', emailRoutes)
 
 // Serve interests list to frontend
 app.get('/api/interests', (req, res) => {
@@ -48,12 +51,34 @@ app.get('/api/users', authMiddleware, async (req, res) => {
 
 const MONGO_URI = process.env.MONGO_URI
 
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
   try {
     await connectDB(MONGO_URI)
     console.log(`Backend running on http://localhost:${PORT}`)
+    
+    // Initialize daily email schedules for all users with emails enabled
+    await initializeDailyEmailSchedules()
   } catch (err) {
     console.error('Failed to connect to MongoDB, shutting down.')
     process.exit(1)
   }
+})
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server')
+  stopAllEmailSchedules()
+  server.close(() => {
+    console.log('HTTP server closed')
+    process.exit(0)
+  })
+})
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server')
+  stopAllEmailSchedules()
+  server.close(() => {
+    console.log('HTTP server closed')
+    process.exit(0)
+  })
 })

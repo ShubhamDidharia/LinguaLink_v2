@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getInterests, signup } from '../services/api'
+import { showSuccess, showError } from '../utils/toast'
 import MultiSelect from '../components/MultiSelect'
 import { User, Mail, Lock, Heart, Globe, ChevronRight, ChevronLeft } from 'lucide-react'
 
@@ -70,10 +71,12 @@ export default function Signup() {
 
       const user = await signup(payload)
       localStorage.setItem('user', JSON.stringify(user))
+      showSuccess('Welcome to LinguaLink! 🎉 Your account has been created.')
       navigate('/discover', { replace: true })
     } catch (err) {
       const msg = err?.error || err?.message || 'Signup failed. Please try again.'
       setError(msg)
+      showError(msg)
       console.error('Signup error:', err)
     } finally {
       setLoading(false)

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getMe, getConversations, getMessages, sendMessage, markMessagesAsRead, getUser } from '../services/api'
+import { showSuccess, showError } from '../utils/toast'
 import MainLayout from '../components/MainLayout'
 import { Send, MessageCircle, ArrowLeft } from 'lucide-react'
 
@@ -133,7 +134,7 @@ export default function Chat() {
       setConversations(convs)
     } catch (err) {
       console.error('Failed to send message:', err)
-      alert('Failed to send message')
+      showError('Failed to send message')
     } finally {
       setIsSending(false)
     }

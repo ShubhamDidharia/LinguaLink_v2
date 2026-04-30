@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getUser, getMe, sendConnectionRequest, getConnectionStatus, updateProfile, deleteProfile, getInterests } from '../services/api'
+import { getUser, getMe, sendConnectionRequest, getConnectionStatus, updateProfile, deleteProfile, getInterests, toggleDailyEmail, getDailyEmailStatus } from '../services/api'
+import { showSuccess, showError } from '../utils/toast'
 import MainLayout from '../components/MainLayout'
 import MultiSelect from '../components/MultiSelect'
-import { ArrowLeft, MessageCircle, UserPlus, Edit2, Save, X, Trash2 } from 'lucide-react'
+import { ArrowLeft, MessageCircle, UserPlus, Edit2, Save, X, Trash2, Mail } from 'lucide-react'
 
 const LANGUAGES = [
   'English', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Korean', 
@@ -32,6 +33,8 @@ export default function Profile() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deletePassword, setDeletePassword] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [dailyEmailEnabled, setDailyEmailEnabled] = useState(false)
+  const [isTogglingEmail, setIsTogglingEmail] = useState(false)
 
   useEffect(() => {
     async function loadData() {
@@ -49,6 +52,16 @@ export default function Profile() {
           languagesKnown: profileUser.languagesKnown || [],
           languagesLearning: profileUser.languagesLearning || []
         })
+
+        // Load email status if viewing own profile
+        if (me && me._id === userId) {
+          try {
+            const emailStatus = await getDailyEmailStatus()
+            setDailyEmailEnabled(emailStatus.dailyEmailEnabled)
+          } catch (err) {
+            console.error('Failed to load email status')
+          }
+        }
 
         if (me && me._id !== userId) {
           try {
@@ -87,7 +100,7 @@ export default function Profile() {
       setConnectionStatus(status)
     } catch (err) {
       console.error('Failed to connect:', err)
-      alert('Connection request sent! Check your notifications.')
+      showSuccess('Connection request sent! Check your notifications.')
       setConnectionStatus({ status: 'pending' })
     } finally {
       setConnecting(false)
@@ -100,10 +113,10 @@ export default function Profile() {
       const updated = await updateProfile(editData)
       setUser(updated)
       setIsEditing(false)
-      alert('Profile updated successfully!')
+      showSuccess('Profile updated successfully! ✨')
     } catch (err) {
       console.error('Failed to update profile:', err)
-      alert(err.error || 'Failed to update profile')
+      showError(err.error || 'Failed to update profile')
     } finally {
       setIsSaving(false)
     }
@@ -111,7 +124,7 @@ export default function Profile() {
 
   const handleDeleteAccount = async () => {
     if (!deletePassword) {
-      alert('Please enter your password')
+      showError('Please enter your password')
       return
     }
 
@@ -119,14 +132,30 @@ export default function Profile() {
       setIsDeleting(true)
       await deleteProfile(deletePassword)
       localStorage.removeItem('user')
-      alert('Account deleted successfully')
+      showSuccess('Account deleted successfully')
       navigate('/login', { replace: true })
     } catch (err) {
       console.error('Failed to delete account:', err)
-      alert(err.error || 'Failed to delete account')
+      showError(err.error || 'Failed to delete account')
     } finally {
       setIsDeleting(false)
       setDeletePassword('')
+    }
+  }
+
+  const handleToggleDailyEmail = async () => {
+    try {
+      setIsTogglingEmail(true)
+      const response = await toggleDailyEmail(!dailyEmailEnabled)
+      setDailyEmailEnabled(response.dailyEmailEnabled)
+      const status = response.dailyEmailEnabled ? 'enabled' : 'disabled'
+      const emoji = response.dailyEmailEnabled ? '📧' : '🔕'
+      showSuccess(`Daily email ${status} ${emoji}`)
+    } catch (err) {
+      console.error('Failed to toggle daily email:', err)
+      showError(err.error || 'Failed to update email preferences')
+    } finally {
+      setIsTogglingEmail(false)
     }
   }
 
@@ -407,6 +436,54 @@ export default function Profile() {
                 <div className="mb-8 p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg">
                   <p className="text-sm sm:text-base text-amber-800 font-medium">⭐ Premium Member</p>
                   <p className="text-xs sm:text-sm text-amber-700">This user has access to all LinguaLink Premium features</p>
+                </div>
+              )}
+
+              {/* Email Preferences */}
+              {isOwnProfile && (
+                <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-slate-200">
+                  <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-4">Email Preferences</h3>
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Mail size={20} className="text-indigo-600" />
+                        <label className="text-sm sm:text-base font-medium text-slate-900">
+                          Daily Word of the Day
+                        </label>
+                      </div>
+                      <p className="text-xs sm:text-sm text-slate-600">
+                        Receive daily emails with a new word and vocabulary review
+                      </p>
+                    </div>
+                    
+                    {/* Toggle Switch */}
+                    <button
+                      onClick={handleToggleDailyEmail}
+                      disabled={isTogglingEmail}
+                      className={`relative inline-flex h-8 w-14 flex-shrink-0 items-center rounded-full transition-colors ${
+                        dailyEmailEnabled ? 'bg-indigo-600' : 'bg-slate-300'
+                      } ${isTogglingEmail ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                    >
+                      <span
+                        className={`inline-block h-7 w-7 transform rounded-full bg-white transition-transform ${
+                          dailyEmailEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  
+                  {dailyEmailEnabled && (
+                    <p className="text-xs sm:text-sm text-green-700 bg-green-50 p-3 rounded-lg mt-3 border border-green-200">
+                      ✓ You'll receive a daily email at 8:00 AM UTC with a new word and vocabulary review
+                    </p>
+                  )}
+                  
+                  {!dailyEmailEnabled && (
+                    <p className="text-xs sm:text-sm text-slate-600 bg-slate-50 p-3 rounded-lg mt-3 border border-slate-200">
+                      Daily emails are currently disabled. Toggle on to start receiving word of the day emails.
+                    </p>
+                  )}
                 </div>
               )}
 

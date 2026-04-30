@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import User from '../models/User.js'
 import { createDefaultWorkspaces, updateUserWorkspaces } from '../utils/workspaceUtils.js'
+import { sendAIPersonalizedWelcomeEmail } from '../services/emailService.js'
 
 const JWT_SECRET = process.env.JWT_SECRET 
 
@@ -30,6 +31,9 @@ export async function signUp(req, res) {
     if (languagesLearning && languagesLearning.length > 0) {
       await createDefaultWorkspaces(user._id, languagesLearning)
     }
+
+    // Send AI-personalized welcome email
+    await sendAIPersonalizedWelcomeEmail(user)
 
     generateTokenAndSetCookie(user._id, res)
     const userSafe = user.toObject()

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMe, getPendingConnections, respondToConnectionRequest } from '../services/api'
+import { showSuccess, showError } from '../utils/toast'
 import MainLayout from '../components/MainLayout'
 import { Bell, Check, X } from 'lucide-react'
 
@@ -34,9 +35,12 @@ export default function Notifications() {
       setPendingConnections(pending =>
         pending.filter(p => p._id !== connectionId)
       )
+      const actionText = action === 'accept' ? 'Connection accepted' : 'Connection rejected'
+      const emoji = action === 'accept' ? '👋' : '✋'
+      showSuccess(`${actionText} ${emoji}`)
     } catch (err) {
       console.error('Failed to respond:', err)
-      alert('Failed to respond to connection request')
+      showError('Failed to respond to connection request')
     }
   }
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Plus, Trash2, FolderPlus, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { showSuccess, showError } from '../utils/toast'
 import MainLayout from '../components/MainLayout'
 import {
   getUserWorkspaces,
@@ -90,13 +91,17 @@ export default function Workspace() {
         setSelectedWorkspaceId(workspaces.length > 1 ? workspaces[0]._id : null)
       }
       await loadDeletedLanguages()
+      showSuccess('Workspace deleted successfully 🗑️')
     } catch (err) {
-      setError(err.message || 'Failed to delete workspace')
+      const msg = err.message || 'Failed to delete workspace'
+      setError(msg)
+      showError(msg)
     }
   }
 
   const handleCreateWorkspace = async () => {
     if (!newLanguage.trim()) {
+      showError('Please select a language')
       setError('Please select a language')
       return
     }
@@ -109,8 +114,11 @@ export default function Workspace() {
       setShowCreateForm(false)
       await loadWorkspaces()
       await loadDeletedLanguages()
+      showSuccess(`${newLanguage} workspace created! 🎉`)
     } catch (err) {
-      setError(err.message || 'Failed to create workspace')
+      const msg = err.message || 'Failed to create workspace'
+      setError(msg)
+      showError(msg)
     } finally {
       setIsCreating(false)
     }

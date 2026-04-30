@@ -12,7 +12,9 @@ const UserSchema = new Schema(
     interests: { type: [String], default: [] },
     languagesKnown: { type: [String], default: [] },
     languagesLearning: { type: [String], default: [] },
-    subscription: { type: Boolean, default: false }
+    subscription: { type: Boolean, default: false },
+    dailyEmailEnabled: { type: Boolean, default: false },
+    lastEmailSentAt: { type: Date, default: null }
   },
   { timestamps: true }
 )

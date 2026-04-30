@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UserPlus, UserCheck, Clock, MessageCircle } from 'lucide-react'
 import { sendConnectionRequest, getConnectionStatus } from '../services/api'
+import { showSuccess, showError } from '../utils/toast'
 
 export default function DiscoverUserCard({ user, currentUser, onConnectionChange }) {
   const navigate = useNavigate()
@@ -29,10 +30,11 @@ export default function DiscoverUserCard({ user, currentUser, onConnectionChange
       await sendConnectionRequest(user._id)
       const status = await getConnectionStatus(user._id)
       setConnectionStatus(status)
+      showSuccess('Connection request sent! 🤝')
       onConnectionChange?.()
     } catch (err) {
       console.error('Failed to send connection request:', err)
-      alert('Connection request sent! Check your notifications.')
+      showError(err.error || 'Failed to send connection request')
       setConnectionStatus({ status: 'pending' })
     } finally {
       setLoading(false)

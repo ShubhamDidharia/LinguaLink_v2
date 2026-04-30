@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Search, Loader2, BookmarkPlus, AlertCircle } from 'lucide-react';
 import { translateAndDefine, addVocabularyFromAIDictionary } from '../services/api';
+import { showSuccess, showError } from '../utils/toast';
 
 const DictionaryModal = ({ isOpen, onClose }) => {
   const [text, setText] = useState('');
@@ -59,6 +60,7 @@ const DictionaryModal = ({ isOpen, onClose }) => {
       }
       
       setError(errorMessage);
+      showError(errorMessage);
       setLoadingMessage('');
     } finally {
       setLoading(false);
@@ -77,7 +79,9 @@ const DictionaryModal = ({ isOpen, onClose }) => {
     const attemptAddVocab = async () => {
       try {
         await addVocabularyFromAIDictionary(result.original, result.meaning);
-        setVocabSuccess(`✓ "${result.original}" added to your ${result.language} workspace!`);
+        const successMsg = `✓ "${result.original}" added to ${result.language}!`;
+        setVocabSuccess(successMsg);
+        showSuccess(successMsg);
         setAddingToVocab(false);
         
         // Clear success message after 3 seconds
@@ -102,6 +106,7 @@ const DictionaryModal = ({ isOpen, onClose }) => {
             errorMsg = 'Service unavailable. Please try again later.';
           }
           setError(errorMsg);
+          showError(errorMsg);
           setAddingToVocab(false);
         }
       }

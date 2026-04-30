@@ -17,6 +17,8 @@ export const translateAndDefine = async (req, res) => {
 Original: "${text}"
 Target language: "${targetLanguage}"
 Rules:
+- all values must be in the target language except original and language
+- meaning: 1 to 2 concise sentences
 - examples: array of 2 to 3 sentences
 - synonyms: array of 3 to 6 items
 - Keep values concise

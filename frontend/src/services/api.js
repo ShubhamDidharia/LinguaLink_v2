@@ -160,6 +160,17 @@ export async function addVocabularyFromAIDictionary(word, meaning) {
   return res.data
 }
 
+// Email endpoints
+export async function toggleDailyEmail(enabled) {
+  const res = await client.post('/api/email/toggle-daily', { enabled })
+  return res.data
+}
+
+export async function getDailyEmailStatus() {
+  const res = await client.get('/api/email/daily-status')
+  return res.data
+}
+
 export default {
   login,
   signup,
@@ -189,4 +200,6 @@ export default {
   updateVocabulary,
   deleteVocabulary,
   addVocabularyFromAIDictionary,
+  toggleDailyEmail,
+  getDailyEmailStatus,
 }
