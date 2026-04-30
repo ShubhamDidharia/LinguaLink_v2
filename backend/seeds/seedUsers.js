@@ -16,7 +16,7 @@ import Message from '../models/Message.js'
 import INTERESTS from '../data/interests.js'
 
 // Load .env from parent (backend) directory
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/lingualink'
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/duoclick'
 
 function pickRandom(arr, n) {
   const copy = [...arr]

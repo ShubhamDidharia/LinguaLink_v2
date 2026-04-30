@@ -54,7 +54,7 @@ export default function MainLayout({ children, currentUser, isLoading }) {
                 <Menu size={24} className="text-slate-900" />
               )}
             </button>
-            <div className="text-lg font-bold text-indigo-600">LinguaLink</div>
+            <div className="text-lg font-bold text-indigo-600">DuoClick</div>
             <div className="w-10" /> {/* Spacer for alignment */}
           </div>
         </div>

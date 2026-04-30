@@ -88,7 +88,7 @@ Please write only the message without any additional text or formatting.`
   } catch (error) {
     console.error('[email] Error generating personalized message from Gemini:', error.message)
     // Fallback message
-    return `Welcome to LinguaLink! We're excited to have you on your language learning journey. With our platform, you can connect with learners worldwide, practice daily, and achieve your language goals. Let's get started!`
+    return `Welcome to DuoClick! We're excited to have you on your language learning journey. With our platform, you can connect with learners worldwide, practice daily, and achieve your language goals. Let's get started!`
   }
 }
 
@@ -100,7 +100,7 @@ async function sendAIPersonalizedWelcomeEmail(user) {
   try {
     const personalizedMessage = await generatePersonalizedWelcomeMessage(user)
 
-    const subject = 'Welcome to LinguaLink - Your Personal Learning Journey Starts Here!'
+    const subject = 'Welcome to DuoClick - Your Personal Learning Journey Starts Here!'
     const text = [
       `Hello ${user.name || 'there'},`,
       '',
@@ -114,7 +114,7 @@ async function sendAIPersonalizedWelcomeEmail(user) {
       'You can manage your daily email preferences anytime in your workspace settings.',
       '',
       'Happy learning!',
-      'The LinguaLink Team',
+      'The DuoClick Team',
     ].join('\n')
 
     await sendMailSafe({
@@ -147,7 +147,7 @@ async function sendDailyWordEmail(user, savedWords = [], newWord = null) {
       .sort(() => Math.random() - 0.5)
       .slice(0, Math.min(3, savedWords.length))
 
-    const subject = 'LinguaLink Daily: Word of the Day & Vocabulary Review'
+    const subject = 'DuoClick Daily: Word of the Day & Vocabulary Review'
 
     const text = [
       `Hello ${user.name || 'there'},`,
@@ -188,7 +188,7 @@ async function sendDailyWordEmail(user, savedWords = [], newWord = null) {
       'Manage your email preferences in Settings → Email Preferences',
       '',
       'Best regards,',
-      'The LinguaLink Team',
+      'The DuoClick Team',
     ].join('\n')
 
     await sendMailSafe({

@@ -435,7 +435,7 @@ export default function Profile() {
               {user.subscription && (
                 <div className="mb-8 p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg">
                   <p className="text-sm sm:text-base text-amber-800 font-medium">⭐ Premium Member</p>
-                  <p className="text-xs sm:text-sm text-amber-700">This user has access to all LinguaLink Premium features</p>
+                  <p className="text-xs sm:text-sm text-amber-700">This user has access to all DuoClick Premium features</p>
                 </div>
               )}
 

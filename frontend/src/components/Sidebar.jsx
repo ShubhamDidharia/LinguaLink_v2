@@ -38,7 +38,7 @@ export default function Sidebar({ currentUser, mobileOpen, onCloseMobile }) {
         onClick={() => handleNavigate('/discover')}
         className="hidden sm:block text-2xl font-bold text-indigo-600 mb-8 cursor-pointer hover:text-indigo-700 transition-colors"
       >
-        LinguaLink
+        DuoClick
       </div>
 
       {/* Logo Mobile - Smaller version */}

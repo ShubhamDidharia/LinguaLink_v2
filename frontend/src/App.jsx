@@ -1,6 +1,8 @@
-import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { getMe } from './services/api'
+import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Profile from './pages/Profile'
@@ -11,6 +13,35 @@ import Workspace from './pages/Workspace'
 import Notifications from './pages/Notifications'
 import Billing from './pages/Billing'
 import DictionaryButton from './components/DictionaryButton'
+import Footer from './components/Footer'
+
+function ProtectedRoute({ children }) {
+  const [isAuthenticated, setIsAuthenticated] = useState(null)
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        await getMe()
+        setIsAuthenticated(true)
+      } catch {
+        setIsAuthenticated(false)
+      }
+    }
+    checkAuth()
+  }, [])
+
+  if (isAuthenticated === null) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>
+  }
+
+  return isAuthenticated ? children : <Navigate to="/" replace />
+}
+
+function DictionaryButtonWrapper() {
+  const location = useLocation()
+  const showDictionary = !['/login', '/signup', '/'].includes(location.pathname)
+  return showDictionary ? <DictionaryButton /> : null
+}
 
 export default function App() {
   return (
@@ -58,20 +89,81 @@ export default function App() {
           },
         }}
       />
-      <DictionaryButton />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/profile/:userId" element={<Profile />} />
-        <Route path="/discover" element={<Discover />} />
-        <Route path="/friends" element={<Friends />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/chat/:friendId" element={<Chat />} />
-        <Route path="/workspace" element={<Workspace />} />
-        <Route path="/notifications" element={<Notifications />} />
-        <Route path="/billing" element={<Billing />} />
-        <Route path="/" element={<Navigate to="/discover" replace />} />
-      </Routes>
+      <div className="flex flex-col min-h-screen">
+        <DictionaryButtonWrapper />
+        <div className="flex-1">
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route
+              path="/profile/:userId"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/discover"
+              element={
+                <ProtectedRoute>
+                  <Discover />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/friends"
+              element={
+                <ProtectedRoute>
+                  <Friends />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/chat/:friendId"
+              element={
+                <ProtectedRoute>
+                  <Chat />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/workspace"
+              element={
+                <ProtectedRoute>
+                  <Workspace />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/billing"
+              element={
+                <ProtectedRoute>
+                  <Billing />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
     </BrowserRouter>
   )
 }

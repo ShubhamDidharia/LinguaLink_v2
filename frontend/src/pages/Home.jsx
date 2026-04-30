@@ -83,7 +83,7 @@ export default function Home() {
     <div className="container">
       {/* Header */}
       <div className="header">
-        <div className="app-title">LinguaLink</div>
+        <div className="app-title">DuoClick</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {currentUser ? (
             <>

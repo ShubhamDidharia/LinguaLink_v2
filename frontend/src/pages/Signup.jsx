@@ -71,7 +71,7 @@ export default function Signup() {
 
       const user = await signup(payload)
       localStorage.setItem('user', JSON.stringify(user))
-      showSuccess('Welcome to LinguaLink! 🎉 Your account has been created.')
+      showSuccess('Welcome to DuoClick! 🎉 Your account has been created.')
       navigate('/discover', { replace: true })
     } catch (err) {
       const msg = err?.error || err?.message || 'Signup failed. Please try again.'
@@ -87,15 +87,18 @@ export default function Signup() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-slate-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       <div className="w-full max-w-md">
         {/* Logo & Header */}
-        <div className="text-center mb-6 sm:mb-8">
+        <button
+          onClick={() => navigate('/')}
+          className="w-full text-center mb-6 sm:mb-8 hover:opacity-80 transition-opacity"
+        >
           <div className="inline-block">
-            <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mb-3 sm:mb-4 mx-auto shadow-lg">
-              <span className="text-white text-xl sm:text-2xl font-bold">L</span>
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center mb-3 sm:mb-4 mx-auto shadow-lg">
+              <span className="text-white text-xl sm:text-2xl font-bold">D</span>
             </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-1 sm:mb-2">LinguaLink</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-1 sm:mb-2">DuoClick</h1>
           <p className="text-sm sm:text-base text-slate-600">Join our language learning community</p>
-        </div>
+        </button>
 
         {/* Progress Indicator */}
         <div className="flex items-center justify-between mb-6 sm:mb-8 px-2 sm:px-0">

@@ -86,7 +86,7 @@ export default function Billing() {
             </p>
             <p className="text-slate-600 mt-2">
               {currentUser.subscription
-                ? 'You have full access to all LinguaLink features'
+                ? 'You have full access to all DuoClick features'
                 : 'Upgrade to unlock premium features'}
             </p>
           </div>
@@ -155,7 +155,7 @@ export default function Billing() {
               },
               {
                 q: 'Do you offer a free trial?',
-                a: 'Yes! Start with our free Basic plan to explore LinguaLink before upgrading to Pro or Premium.'
+                a: 'Yes! Start with our free Basic plan to explore DuoClick before upgrading to Pro or Premium.'
               },
               {
                 q: 'What payment methods do you accept?',
