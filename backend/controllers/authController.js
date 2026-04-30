@@ -38,13 +38,17 @@ export async function signUp(req, res) {
       await createDefaultWorkspaces(user._id, languagesLearning)
     }
 
-    // Send AI-personalized welcome email
-    await sendAIPersonalizedWelcomeEmail(user)
-
     generateTokenAndSetCookie(user._id, res)
     const userSafe = user.toObject()
     delete userSafe.password
     res.status(201).json(userSafe)
+
+    // Send AI-personalized welcome email without blocking signup response
+    setImmediate(() => {
+      sendAIPersonalizedWelcomeEmail(user).catch((error) => {
+        console.error('[email] Welcome email failed after signup:', error.message)
+      })
+    })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Server error' })
