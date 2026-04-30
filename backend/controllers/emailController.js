@@ -3,6 +3,7 @@ import {
   startUserDailyEmailSchedule,
   stopUserDailyEmailSchedule,
 } from '../services/emailScheduler.js'
+import { sendMailSafe } from '../services/emailService.js'
 
 /**
  * Toggle daily email preference for a user
@@ -71,7 +72,43 @@ export const getDailyEmailStatus = async (req, res) => {
   }
 }
 
+/**
+ * Send a test email to verify SMTP
+ * POST /api/email/test
+ */
+export const sendTestEmail = async (req, res) => {
+  try {
+    const userId = req.user.userId
+    const { to } = req.body || {}
+
+    const user = await User.findById(userId).select('email name')
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
+    const targetEmail = to || user.email
+    if (!targetEmail) {
+      return res.status(400).json({ error: 'Target email missing' })
+    }
+
+    const subject = 'DuoClick SMTP Test'
+    const text = `Hello ${user.name || 'there'},\n\nThis is a test email to verify SMTP delivery for DuoClick.\n\nIf you received this, SMTP is working.\n\n- DuoClick`
+
+    await sendMailSafe({
+      to: targetEmail,
+      subject,
+      text,
+    })
+
+    res.json({ message: 'Test email sent (or queued).', to: targetEmail })
+  } catch (error) {
+    console.error('[email] Error sending test email:', error.message)
+    res.status(500).json({ error: 'Failed to send test email' })
+  }
+}
+
 export default {
   toggleDailyEmail,
   getDailyEmailStatus,
+  sendTestEmail,
 }
