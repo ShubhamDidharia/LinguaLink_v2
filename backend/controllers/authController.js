@@ -6,14 +6,20 @@ import { sendAIPersonalizedWelcomeEmail } from '../services/emailService.js'
 
 const JWT_SECRET = process.env.JWT_SECRET 
 
-function generateTokenAndSetCookie(userId, res) {
-  const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' })
-  res.cookie('jwt', token, {
+const isProduction = process.env.NODE_ENV === 'production'
+
+function getCookieOptions() {
+  return {
     httpOnly: true,
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    sameSite: 'lax',
-    secure: false
-  })
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction
+  }
+}
+
+function generateTokenAndSetCookie(userId, res) {
+  const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' })
+  res.cookie('jwt', token, getCookieOptions())
 }
 
 export async function signUp(req, res) {
@@ -68,7 +74,7 @@ export async function login(req, res) {
 
 export async function logout(req, res) {
   try {
-    res.cookie('jwt', '', { httpOnly: true, maxAge: 0 })
+    res.cookie('jwt', '', { ...getCookieOptions(), maxAge: 0 })
     res.status(200).json({ message: 'Logged out successfully' })
   } catch (err) {
     console.error(err)
