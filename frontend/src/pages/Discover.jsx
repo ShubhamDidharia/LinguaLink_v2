@@ -71,16 +71,26 @@ export default function Discover() {
     <MainLayout currentUser={currentUser} isLoading={isLoading}>
       <div className="p-4 sm:p-6 lg:p-8">
         {/* Header */}
-        <div className="mb-8 sm:mb-12">
-          <div className="flex items-center gap-2 sm:gap-3 mb-2">
-            <Sparkles className="text-indigo-600 w-6 h-6 sm:w-7 sm:h-7" />
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900">Discover</h1>
+        {/* Header Banner */}
+        <div className="mb-8 sm:mb-12 bg-gradient-to-r from-amber-100 to-purple-200 rounded-3xl p-6 sm:p-10 shadow-sm relative overflow-hidden">
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 sm:gap-4 mb-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/60 backdrop-blur-md rounded-xl flex items-center justify-center shadow-sm transform -rotate-6">
+                <Sparkles className="text-indigo-600 w-6 h-6 sm:w-7 sm:h-7" />
+              </div>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-800 to-purple-800 drop-shadow-sm">
+                Discover
+              </h1>
+            </div>
+            <p className="text-indigo-900/80 font-medium text-sm sm:text-base lg:text-lg max-w-2xl mt-2">
+              {currentUser
+                ? 'Meet fellow language learners who match your interests and language goals. Let the journey begin!'
+                : 'Connect with language learners around the world and start practicing today!'}
+            </p>
           </div>
-          <p className="text-slate-600 text-sm sm:text-base lg:text-lg">
-            {currentUser
-              ? 'Meet fellow language learners who match your interests and language goals'
-              : 'Connect with language learners around the world'}
-          </p>
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white/40 blur-2xl"></div>
+          <div className="absolute bottom-0 right-20 w-32 h-32 rounded-full bg-indigo-400/20 blur-xl"></div>
         </div>
 
         {/* User Grid */}

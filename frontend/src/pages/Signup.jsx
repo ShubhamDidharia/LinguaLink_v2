@@ -85,7 +85,7 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-purple-100 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
-      <div className="w-full max-w-md">
+      <div className={`w-full transition-all duration-500 ${step === 2 ? 'max-w-md lg:max-w-2xl' : 'max-w-md'}`}>
         {/* Logo & Header */}
         <button
           onClick={() => navigate('/')}
@@ -230,22 +230,44 @@ export default function Signup() {
                 <p className="text-slate-500 text-center py-8">Loading interests...</p>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-3">
-                    {availableInterests.map(interest => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {availableInterests.map(interest => {
+                      const isSelected = interests.includes(interest);
+                      const colors = [
+                        { unselected: 'bg-red-50 text-red-700 border-red-200 hover:border-red-300 hover:bg-red-100', selected: 'bg-red-500 text-white border-red-500 shadow-md shadow-red-500/30' },
+                        { unselected: 'bg-orange-50 text-orange-700 border-orange-200 hover:border-orange-300 hover:bg-orange-100', selected: 'bg-orange-500 text-white border-orange-500 shadow-md shadow-orange-500/30' },
+                        { unselected: 'bg-amber-50 text-amber-700 border-amber-200 hover:border-amber-300 hover:bg-amber-100', selected: 'bg-amber-500 text-white border-amber-500 shadow-md shadow-amber-500/30' },
+                        { unselected: 'bg-green-50 text-green-700 border-green-200 hover:border-green-300 hover:bg-green-100', selected: 'bg-green-500 text-white border-green-500 shadow-md shadow-green-500/30' },
+                        { unselected: 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:border-emerald-300 hover:bg-emerald-100', selected: 'bg-emerald-500 text-white border-emerald-500 shadow-md shadow-emerald-500/30' },
+                        { unselected: 'bg-teal-50 text-teal-700 border-teal-200 hover:border-teal-300 hover:bg-teal-100', selected: 'bg-teal-500 text-white border-teal-500 shadow-md shadow-teal-500/30' },
+                        { unselected: 'bg-cyan-50 text-cyan-700 border-cyan-200 hover:border-cyan-300 hover:bg-cyan-100', selected: 'bg-cyan-500 text-white border-cyan-500 shadow-md shadow-cyan-500/30' },
+                        { unselected: 'bg-blue-50 text-blue-700 border-blue-200 hover:border-blue-300 hover:bg-blue-100', selected: 'bg-blue-500 text-white border-blue-500 shadow-md shadow-blue-500/30' },
+                        { unselected: 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:border-indigo-300 hover:bg-indigo-100', selected: 'bg-indigo-500 text-white border-indigo-500 shadow-md shadow-indigo-500/30' },
+                        { unselected: 'bg-violet-50 text-violet-700 border-violet-200 hover:border-violet-300 hover:bg-violet-100', selected: 'bg-violet-500 text-white border-violet-500 shadow-md shadow-violet-500/30' },
+                        { unselected: 'bg-purple-50 text-purple-700 border-purple-200 hover:border-purple-300 hover:bg-purple-100', selected: 'bg-purple-500 text-white border-purple-500 shadow-md shadow-purple-500/30' },
+                        { unselected: 'bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 hover:border-fuchsia-300 hover:bg-fuchsia-100', selected: 'bg-fuchsia-500 text-white border-fuchsia-500 shadow-md shadow-fuchsia-500/30' },
+                        { unselected: 'bg-pink-50 text-pink-700 border-pink-200 hover:border-pink-300 hover:bg-pink-100', selected: 'bg-pink-500 text-white border-pink-500 shadow-md shadow-pink-500/30' },
+                        { unselected: 'bg-rose-50 text-rose-700 border-rose-200 hover:border-rose-300 hover:bg-rose-100', selected: 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-500/30' }
+                      ];
+                      let hash = 0;
+                      for (let i = 0; i < interest.length; i++) {
+                        hash = interest.charCodeAt(i) + ((hash << 5) - hash);
+                      }
+                      const c = colors[Math.abs(hash) % colors.length];
+
+                      return (
                       <button
                         key={interest}
                         type="button"
                         onClick={() => toggleInterest(interest)}
                         className={`
-                          px-4 py-3 rounded-lg font-medium text-sm transition-all border-2
-                          ${interests.includes(interest)
-                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50'}
+                          px-4 py-3 rounded-xl font-medium text-sm transition-all duration-300 border-2 transform hover:scale-105 active:scale-95
+                          ${isSelected ? c.selected : c.unselected}
                         `}
                       >
                         {interest}
                       </button>
-                    ))}
+                    )})}
                   </div>
 
                   <div className="pt-2">
@@ -317,7 +339,7 @@ export default function Signup() {
                   Languages You Speak <span className="text-red-500">*</span>
                 </label>
                 <MultiSelect
-                  options={LANGUAGES}
+                  options={LANGUAGES.filter(l => !languagesLearning.includes(l))}
                   selected={languagesKnown}
                   onChange={setLanguagesKnown}
                   placeholder="Select languages you speak"
@@ -330,7 +352,7 @@ export default function Signup() {
                   Languages You Want to Learn <span className="text-red-500">*</span>
                 </label>
                 <MultiSelect
-                  options={LANGUAGES}
+                  options={LANGUAGES.filter(l => !languagesKnown.includes(l))}
                   selected={languagesLearning}
                   onChange={setLanguagesLearning}
                   placeholder="Select languages to learn"
