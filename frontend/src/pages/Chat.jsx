@@ -321,13 +321,7 @@ export default function Chat() {
                   <div className="min-w-0">
                     <h3 className="text-sm sm:text-lg font-semibold text-slate-900 truncate">{selectedFriend.user.name}</h3>
                     <p className="hidden sm:block text-sm text-slate-600">{selectedFriend.user.email}</p>
-                    {onlineUsers.has(selectedFriend.user._id) ? (
-                      <p className="text-xs sm:text-xs text-green-600 mt-0.5 sm:mt-1 font-medium flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span> Online
-                      </p>
-                    ) : (
-                      <p className="text-xs sm:text-xs text-slate-500 mt-0.5 sm:mt-1 font-medium">Offline</p>
-                    )}
+
                   </div>
                 </div>
                 <div className="w-10 sm:w-12 h-10 sm:h-12 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
