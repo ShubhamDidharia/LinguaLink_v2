@@ -18,6 +18,9 @@ export default function Login() {
 
     try {
       const user = await login(email, password)
+      if (user?.token) {
+        localStorage.setItem('authToken', user.token)
+      }
       localStorage.setItem('user', JSON.stringify(user))
       setEmail('')
       setPassword('')

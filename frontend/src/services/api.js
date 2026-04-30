@@ -6,6 +6,15 @@ const client = axios.create({
   withCredentials: true
 })
 
+client.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken')
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 client.interceptors.response.use(
   res => res,
   err => {

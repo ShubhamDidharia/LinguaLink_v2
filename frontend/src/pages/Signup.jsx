@@ -70,6 +70,9 @@ export default function Signup() {
       }
 
       const user = await signup(payload)
+      if (user?.token) {
+        localStorage.setItem('authToken', user.token)
+      }
       localStorage.setItem('user', JSON.stringify(user))
       showSuccess('Welcome to DuoClick! 🎉 Your account has been created.')
       navigate('/discover', { replace: true })

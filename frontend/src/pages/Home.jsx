@@ -60,6 +60,7 @@ export default function Home() {
     try {
       await logout()
       localStorage.removeItem('user')
+      localStorage.removeItem('authToken')
       setCurrentUser(null)
       navigate('/login', { replace: true })
     } catch (err) {

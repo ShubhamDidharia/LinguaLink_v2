@@ -20,6 +20,7 @@ function getCookieOptions() {
 function generateTokenAndSetCookie(userId, res) {
   const token = jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' })
   res.cookie('jwt', token, getCookieOptions())
+  return token
 }
 
 export async function signUp(req, res) {
@@ -38,10 +39,10 @@ export async function signUp(req, res) {
       await createDefaultWorkspaces(user._id, languagesLearning)
     }
 
-    generateTokenAndSetCookie(user._id, res)
+    const token = generateTokenAndSetCookie(user._id, res)
     const userSafe = user.toObject()
     delete userSafe.password
-    res.status(201).json(userSafe)
+    res.status(201).json({ ...userSafe, token })
 
     // Send AI-personalized welcome email without blocking signup response
     setImmediate(() => {
@@ -66,10 +67,10 @@ export async function login(req, res) {
     const match = await bcrypt.compare(password, user.password)
     if (!match) return res.status(400).json({ error: 'Invalid credentials' })
 
-    generateTokenAndSetCookie(user._id, res)
+    const token = generateTokenAndSetCookie(user._id, res)
     const userSafe = user.toObject()
     delete userSafe.password
-    res.json(userSafe)
+    res.json({ ...userSafe, token })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Server error' })

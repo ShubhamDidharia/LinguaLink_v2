@@ -5,7 +5,12 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change_this_secret'
 
 export default async function authMiddleware(req, res, next) {
   try {
-    const token = req.cookies.jwt
+    const cookieToken = req.cookies.jwt
+    const authHeader = req.headers.authorization
+    const bearerToken = authHeader && authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : null
+    const token = cookieToken || bearerToken
     if (!token) return res.status(401).json({ error: 'Unauthorized - no token' })
     
     const decoded = jwt.verify(token, JWT_SECRET)

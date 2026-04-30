@@ -132,6 +132,7 @@ export default function Profile() {
       setIsDeleting(true)
       await deleteProfile(deletePassword)
       localStorage.removeItem('user')
+      localStorage.removeItem('authToken')
       showSuccess('Account deleted successfully')
       navigate('/login', { replace: true })
     } catch (err) {
