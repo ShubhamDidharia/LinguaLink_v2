@@ -1,43 +1,56 @@
-import nodemailer from 'nodemailer'
+import { createRequire } from 'module'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const smtpConfigured =
-  process.env.SMTP_HOST &&
-  process.env.SMTP_PORT &&
-  process.env.SMTP_USER &&
-  process.env.SMTP_PASS &&
-  process.env.SMTP_FROM
+const require = createRequire(import.meta.url)
+const SibApiV3Sdk = require('@getbrevo/brevo')
 
-let transporter = null
+const brevoConfigured =
+  process.env.BREVO_API_KEY && process.env.SENDER_EMAIL
 
-if (smtpConfigured) {
-  const smtpPort = Number(process.env.SMTP_PORT)
-  const smtpSecure =
-    process.env.SMTP_SECURE != null
-      ? String(process.env.SMTP_SECURE).toLowerCase() === 'true'
-      : smtpPort === 465
+// Verify Brevo is configured on startup
+if (brevoConfigured) {
+  console.log('[email] Brevo email service configured successfully')
+} else {
+  console.warn('[email] Brevo not fully configured. Missing BREVO_API_KEY or SENDER_EMAIL')
+}
 
-  transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: smtpPort,
-    secure: smtpSecure,
-    requireTLS: smtpPort === 587,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  })
+/**
+ * Send email using Brevo API
+ * @param {string} userEmail - Recipient email address
+ * @param {string} subject - Email subject
+ * @param {string} htmlContent - HTML content for the email
+ * @returns {Promise<Object>} - Result object with success status
+ */
+async function sendEmailViaBrevo(userEmail, subject, htmlContent) {
+  if (!brevoConfigured) {
+    console.warn('[email] Brevo not configured. Skipping email:', { userEmail, subject })
+    return { success: false, error: 'Brevo not configured' }
+  }
 
-  transporter
-    .verify()
-    .then(() => {
-      console.log('[email] SMTP transporter verified successfully')
-    })
-    .catch((error) => {
-      console.warn('[email] SMTP transporter verification failed', {
-        error: error.message,
-      })
-    })
+  try {
+    let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
+
+    // Authenticate with API Key
+    let apiKey = apiInstance.authentications['apiKey']
+    apiKey.apiKey = process.env.BREVO_API_KEY
+
+    let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
+
+    sendSmtpEmail.subject = subject
+    sendSmtpEmail.htmlContent = htmlContent
+    sendSmtpEmail.sender = {
+      name: 'DuoClick',
+      email: process.env.SENDER_EMAIL,
+    }
+    sendSmtpEmail.to = [{ email: userEmail }]
+
+    const data = await apiInstance.sendTransacEmail(sendSmtpEmail)
+    console.log(`[email] Email sent successfully to ${userEmail}. Message ID: ${data.messageId}`)
+    return { success: true, messageId: data.messageId }
+  } catch (error) {
+    console.error(`[email] Brevo error sending to ${userEmail}:`, error.message || error)
+    return { success: false, error }
+  }
 }
 
 async function sendMailSafe({ to, subject, text }) {
@@ -45,17 +58,18 @@ async function sendMailSafe({ to, subject, text }) {
     return
   }
 
-  if (!transporter) {
-    console.warn('[email] SMTP not configured. Skipping email:', { to, subject })
+  if (!brevoConfigured) {
+    console.warn('[email] Brevo not configured. Skipping email:', { to, subject })
     return
   }
 
-  await transporter.sendMail({
-    from: process.env.SMTP_FROM,
-    to,
-    subject,
-    text,
-  })
+  // Convert plain text to HTML
+  const htmlContent = `<html><body><pre style="font-family: Arial, sans-serif; white-space: pre-wrap; word-wrap: break-word;">${text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')}</pre></body></html>`
+
+  await sendEmailViaBrevo(to, subject, htmlContent)
 }
 
 /**
@@ -207,5 +221,5 @@ export {
   sendMailSafe,
   sendAIPersonalizedWelcomeEmail,
   sendDailyWordEmail,
-  transporter,
+  sendEmailViaBrevo,
 }
